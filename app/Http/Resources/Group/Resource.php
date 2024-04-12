@@ -14,12 +14,15 @@ class Resource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return[
+        return [
             'id' => $this->id,
-            'group' => $this->group_name,
+            'group_name' => $this->group_name,
             'description' => $this->description,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+
+
 
         ];
-
     }
 }

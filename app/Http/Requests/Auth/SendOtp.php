@@ -23,7 +23,7 @@ class SendOtp extends FormRequest
     {
         return [
 
-            'phone_no' => 'required',
+            'phone_no' => 'required|numeric|digits:10',
             'type' => 'required|in:signup,login,verification,forget_password',
         ];
     }

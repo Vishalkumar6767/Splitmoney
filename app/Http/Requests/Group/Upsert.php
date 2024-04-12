@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Group;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Group;
 
 class Upsert extends FormRequest
 {
@@ -21,11 +22,16 @@ class Upsert extends FormRequest
      */
     public function rules(): array
     {
+
         return [
-            'group_name' => 'required|string',
+
+            'group_name' => 'required|string|max:255',
             'description' => 'required|string',
 
-
         ];
+    }
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'created_by');
     }
 }

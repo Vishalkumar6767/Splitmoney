@@ -24,7 +24,7 @@ class LoginUser extends FormRequest
     {
         return [
 
-            'phone_no' => ['required', 'regex:/^\+?(\d{1,3})?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/',],
+            'phone_no' => ['required', 'regex:/^\+?(\d{1,3})?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/'],
 
         ];
     }

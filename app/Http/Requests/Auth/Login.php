@@ -24,7 +24,7 @@ class Login extends FormRequest
 
         return [
 
-            'phone_no' => 'required',
+            'phone_no' => 'required|digits:10',
             'otp' => 'required|digits:6',
         ];
     }
