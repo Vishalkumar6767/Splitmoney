@@ -31,24 +31,19 @@ class AuthService
                 'code'=>'400'
             ]);
         }
-
         if ($userOtp->otp == $inputs->otp) {
             $user = User::create($inputs->validated());
-
             $token = $user->createToken(config('app.name'))->accessToken;
-
             if ($inputs->has('token')) {
                 try {
                     $inviteMember = InviteGroupMember::where('token', $inputs->token)
                         ->where('email', $inputs->email)
                         ->first();
-
                     if ($inviteMember) {
                         GroupMember::create([
                             'group_id' => $inviteMember->group_id,
                             'user_id' => $user->id,
                         ]);
-
                         $inviteMember->delete();
                     }
                 } catch (Exception $e) {
@@ -93,13 +88,8 @@ class AuthService
             ->where('type', 'login')
             ->latest()
             ->first();
-
-
-
         $user = User::wherePhoneNo($inputs['phone_no'])->first();
- 
         if ($userOtp->otp == $inputs['otp']) {
-
             $userOtp->update(['verified_at' => now()]);
             $response = [
                 'success' => true,
@@ -107,7 +97,6 @@ class AuthService
                 'user' => $user,
                 'token' => $user->createToken(config('app.name'))->accessToken,
             ];
-
             unset($response['headers']);
             unset($response['original']);
             return response()->json($response);
@@ -120,7 +109,6 @@ class AuthService
         // Revoke the access token associated with the authenticated user
         $user = Auth::user();
         $user->tokens()->delete();
-
         return response()->json(['message' => 'Successfully logged out']);
     }
 }

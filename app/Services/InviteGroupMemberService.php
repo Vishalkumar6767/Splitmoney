@@ -7,7 +7,6 @@ use App\Models\InviteGroupMember;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-
 class InviteGroupMemberService
 {
 
@@ -27,7 +26,6 @@ class InviteGroupMemberService
         ]);
 
         $invitationLink = config('site.frontWebsiteUrl') . '?token=' . $token;
-
         Mail::to($inputs->email)->send(new SendMail($invitationLink));
         return response()->json(['message' => 'Invitation sent successfully'], 200);
     }

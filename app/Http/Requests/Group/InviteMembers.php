@@ -23,12 +23,9 @@ class InviteMembers extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
 
-
     public function rules(): array
 
     {
-
-
         return [
             'group_id' => 'required|exists:groups,id',
             'email' => 'required|email|unique:invite_group_members,email',

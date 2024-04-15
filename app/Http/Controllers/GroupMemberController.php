@@ -30,7 +30,6 @@ class GroupMemberController extends Controller
     public function store(GroupMember $request)
     {
         $GroupMember = $this->groupMember->create($request);
-
         return response()->json($GroupMember, 200);
     }
 

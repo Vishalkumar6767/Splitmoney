@@ -9,15 +9,12 @@ use Illuminate\Support\Facades\Auth;
 class GroupMemberService
 {
    public function getGroupMember(){
-
         return GroupMember::all();
-
    }
 
     public function create($inputs)
     {
         // $user = DB::table('users')->where('name', Auth::id())->get();
-
         $groupMember = new GroupMember([
             'group_id' => $inputs->group_id,
             'user_id' => $inputs->user_id,

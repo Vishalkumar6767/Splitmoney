@@ -19,7 +19,6 @@ class InviteGroupMemberController extends Controller
 
     public function index()
     {
-
         $inviteGroupMembers = $this->inviteGroupMembers->getGroupMember();
         return response()->json($inviteGroupMembers);
     }
@@ -31,7 +30,6 @@ class InviteGroupMemberController extends Controller
     public function store(InviteMembers $request)
     {
         $inviteGroupMembers = $this->inviteGroupMembers->inviteGroupMembers($request);
-
         return response()->json($inviteGroupMembers, 200);
     }
 

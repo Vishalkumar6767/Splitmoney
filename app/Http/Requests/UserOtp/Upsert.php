@@ -23,7 +23,6 @@ class Upsert extends FormRequest
     {
 
         return [
-
             'expire_at' => now()->addMinutes(10),
             'verified_at' => now(),
         ];

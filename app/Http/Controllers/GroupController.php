@@ -23,18 +23,6 @@ class GroupController extends Controller
         $this->groupService = $groupService;
     }
 
-    // public function create(Upsert $request)
-    // {
-
-    //     $group = new Group([
-    //         'group_name' => $request->group_name,
-    //         'description' => $request->description,
-    //         'created_by' => Auth::id(), // Automatically set to logged-in user
-    //     ]);
-    //     $group->save();
-
-    //     return response()->json($group); // Redirect with success message
-    // }
     public function index()
     {
         $group = $this->groupService->getAllGroup();
@@ -59,9 +47,7 @@ class GroupController extends Controller
     {
 
         $group = Group::findOrFail($id);
-
         $validatedData = $request->validated();
-
         $group->update($validatedData);
         return response()->json($group, 200);
     }
@@ -69,8 +55,7 @@ class GroupController extends Controller
     public function destroy($id)
     {
         $group = Group::findOrFail($id);
-       $group->delete();
-       return response()->json(['data'=>"Group Deleted Successfully"],200);
-        
+        $group->delete();
+        return response()->json(['data'=>"Group Deleted Successfully"],200);   
     }
 }

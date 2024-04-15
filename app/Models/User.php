@@ -22,7 +22,6 @@ class User extends Authenticatable
         'name',
         'email',
         'phone_no',
-
     ];
 
     /**
@@ -44,7 +43,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-
         ];
     }
     public function creator()

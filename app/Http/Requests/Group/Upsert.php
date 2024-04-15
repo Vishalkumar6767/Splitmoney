@@ -24,10 +24,8 @@ class Upsert extends FormRequest
     {
 
         return [
-
             'group_name' => 'required|string|max:255',
             'description' => 'required|string',
-
         ];
     }
     public function groups()
