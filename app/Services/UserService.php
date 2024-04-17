@@ -10,7 +10,6 @@ class UserService
     {
         return User::all();
     }
-
 }
 
 

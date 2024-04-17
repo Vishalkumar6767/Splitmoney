@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Group;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SignUp extends FormRequest
+class GroupMember extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,12 +21,9 @@ class SignUp extends FormRequest
      */
     public function rules(): array
     {
-
         return [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'phone_no' => ['required','string', 'min:10','max:12','unique:users,phone_no','regex:/^\d+$/'],
-            'token' => 'nullable|string',
+           'group_id' =>'required',
+           'user_id'=>'required'
         ];
     }
 }

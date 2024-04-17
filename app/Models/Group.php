@@ -9,10 +9,10 @@ class Group extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
-        'start_date',
-        'end_date',
+        'group_name',
         'description',
+        'created_by',
+
     ];
 
     /**
@@ -32,9 +32,35 @@ class Group extends Model
      */
     protected function casts(): array
     {
-        return [
-
-
-        ];
+        return [];
     }
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'group_user');
+    }
+
+
+
+
+    // public function creator()
+    // {
+    //     return $this->belongsTo(User::class, 'created_by');
+    // }
+
+    // protected static function boot()
+    // {
+    //     parent::boot();
+
+    //     static::creating(function ($group) {
+    //         // If the user is authenticated, set the created_by attribute to the current user's ID
+    //         if (auth()->check()) {
+    //             $group->created_by = auth()->id();
+    //         }
+    //     });
+    // }
 }

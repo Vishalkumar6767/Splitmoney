@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Group\Upsert;
 use App\Services\GroupService;
 use Illuminate\Http\Request;
-use App\Http\Requests\Group\Upsert;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
 
 class GroupController extends Controller
 {
@@ -18,6 +22,7 @@ class GroupController extends Controller
     {
         $this->groupService = $groupService;
     }
+
     public function index()
     {
         $group = $this->groupService->getAllGroup();
@@ -30,37 +35,27 @@ class GroupController extends Controller
 
     public function store(Upsert $request)
     {
-        $group = Group::create($request->validated());
-
-        return response()->json($group, 201);
-
+        $group = $this->groupService->create($request);
+        // $group = Group::create($request->validated());
+        return response()->json($group, 200);
     }
 
     /**
      * Display the specified resource.
      */
-
-    public function update(Upsert $request,$id)
+    public function update(Upsert $request, $id)
     {
+
         $group = Group::findOrFail($id);
-
-
         $validatedData = $request->validated();
-
-
         $group->update($validatedData);
-
-        // Return the updated user
         return response()->json($group, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Group $id)
+    public function destroy($id)
     {
         $group = Group::findOrFail($id);
-        $group = $group->delete();
-
+        $group->delete();
+        return response()->json(['data'=>"Group Deleted Successfully"],200);   
     }
 }

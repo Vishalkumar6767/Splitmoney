@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Group;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Group;
 
-class SignUp extends FormRequest
+
+
+class InviteMembers extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,14 +22,17 @@ class SignUp extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
 
+    public function rules(): array
+
+    {
         return [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'phone_no' => ['required','string', 'min:10','max:12','unique:users,phone_no','regex:/^\d+$/'],
-            'token' => 'nullable|string',
+            'group_id' => 'required|exists:groups,id',
+            'email' => 'required|email|unique:invite_group_members,email',
         ];
+    }
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'user_id');
     }
 }

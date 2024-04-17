@@ -9,9 +9,7 @@ use App\Services\UserService; // Import the UserService class
 class UserController extends Controller
 {
 
-    protected $userService; // Declare a property to hold the UserService instance
-
-    // Inject the UserService instance into the constructor
+    protected $userService; 
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
@@ -57,10 +55,10 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        // You can implement logic to delete a specific product here `
+        // You can implement logic to delete a specific user here `
         $user = User::findOrFail($id);
         $user = $user->delete();
         $message = 'User deleted successfully';
-        return response()->json(['messsage' => $message], 200);
+        return response()->json(['message' => $message], 200);
     }
 }
