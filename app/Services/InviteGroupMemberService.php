@@ -27,6 +27,9 @@ class InviteGroupMemberService
 
         $invitationLink = config('site.frontWebsiteUrl') . '?token=' . $token;
         Mail::to($inputs->email)->send(new SendMail($invitationLink));
-        return response()->json(['message' => 'Invitation sent successfully'], 200);
+        return response()->json([
+            'message' => 'Invitation sent successfully',
+            'token'=>$token
+        ], 200);
     }
 }

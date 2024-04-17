@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Services\GroupMemberService;
 use Illuminate\Http\Request;
+use App\Models\Group;
 use App\Http\Requests\Group\GroupMember;
 
 class GroupMemberController extends Controller
@@ -27,9 +28,9 @@ class GroupMemberController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(GroupMember $request)
+    public function store(Group $group, GroupMember $request)
     {
-        $GroupMember = $this->groupMember->create($request);
+        $GroupMember = $this->groupMember->addMembers($group->id,$request);
         return response()->json($GroupMember, 200);
     }
 

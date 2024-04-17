@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\User;
 use App\Models\UserOtp;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,6 @@ class AuthService
             ->whereNull('verified_at')
             ->latest()
             ->first();
-
         if (!$userOtp) {
             $data = [
                 'error' => 'OTP is invalid.',
@@ -31,7 +31,6 @@ class AuthService
             ];
             return $data;
         }
-
         if ($userOtp->otp == $inputs->otp) {
             $user = User::create($inputs->validated());
             $token = $user->createToken(config('app.name'))->accessToken;
@@ -40,26 +39,36 @@ class AuthService
                     $inviteMember = InviteGroupMember::where('token', $inputs->token)
                         ->where('email', $inputs->email)
                         ->first();
-
                     if ($inviteMember) {
-                        GroupMember::create([
+                    $invitedGroupMember = GroupMember::create([
                             'group_id' => $inviteMember->group_id,
                             'user_id' => $user->id,
                         ]);
-
-                        $inviteMember->delete();
+                        $inviteMember->delete();  
                     }
                 } catch (Exception $e) {
-                    // Log or handle database errors here
+                   
                     $data =['error' => 'An error occurred during signup.'];
                     return $data;
                 }
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration successful!',
+                    'token' => $token,
+                    'group_detail'=>$invitedGroupMember,
+                ]);
+            }else{
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Registration successful!',
+                    'token' => $token,
+                ]);
             }
-            return response()->json([
-                'success' => true,
-                'message' => 'Registration successful!',
-                'token' => $token,
-            ]);
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'Registration successful!',
+            //     'token' => $token,
+            // ]);
         }
         $data = ['error' => 'Kindly register again'];
         return $data;
@@ -89,14 +98,12 @@ class AuthService
         $user = User::wherePhoneNo($inputs['phone_no'])->first();
         if ($userOtp->otp == $inputs['otp']) {
             $userOtp->update(['verified_at' => now()]);
-            
             return [
                 'success' => true,
                 'message' => 'You have successfully logged in to your account ',
                 'user' => $user,
                 'token' => $user->createToken(config('app.name'))->accessToken,
-            ];
-         
+            ];   
         }
          $data = ['error' => 'invalid phone no'];
           return $data;

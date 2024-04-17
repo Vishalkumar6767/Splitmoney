@@ -26,6 +26,7 @@ class GroupService
             'created_by' => Auth::id(),
              // Automatically set to logged-in user
         ]);
+        
         $group->save();
         $user = DB::table('users')
             ->select('name', 'email', 'phone_no')

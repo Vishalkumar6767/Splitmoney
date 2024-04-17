@@ -22,8 +22,8 @@ class GroupMember extends FormRequest
     public function rules(): array
     {
         return [
-           'group_id' =>'required',
-           'user_id'=>'required'
+         
+           'user_id'=>'required|exists:users,id|array'
         ];
     }
 }

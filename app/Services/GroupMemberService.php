@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GroupMember;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,21 +13,29 @@ class GroupMemberService
         return GroupMember::all();
    }
 
-    public function create($inputs)
-    {
-        // $user = DB::table('users')->where('name', Auth::id())->get();
-        $groupMember = new GroupMember([
-            'group_id' => $inputs->group_id,
-            'user_id' => $inputs->user_id,
-             // Automatically set to logged-in user
-        ]);
-        $groupMember->save();
-        $user = DB::table('users')
-        ->select('id')
-        ->find(Auth::id());
-        return response()->json([
-            'group_id' => $groupMember,
-            'user_id' => $user
-        ]); // Redirect with success message
+   public function addMembers( $id, $inputs){
+       
+    // dd($inputs,$id);
+    // $groupData = json_decode($id, true);  
+    // $groupId = $groupData['id'];
+    $groupMembers= [];
+
+    foreach($inputs['user_id'] as $userId){
+        $existingGroupMember = GroupMember::where('group_id',$id)
+                                            ->where('user_id',$userId)
+                                            ->first();
+
+        if($existingGroupMember){
+            $groupMembers[] = $existingGroupMember;
+        }else{
+            $newGroupMember = GroupMember::create([
+                'group_id'=>$id,
+                'user_id'=>$userId,
+            ]);
+            $groupMembers[] = $newGroupMember;
+        }  
     }
+    return $groupMembers;       
+}
+
 }
