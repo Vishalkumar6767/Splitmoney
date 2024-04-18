@@ -23,21 +23,20 @@ class GroupController extends Controller
 
     public function index()
     {
-        $group = $this->groupService->getAllGroup();
+        $group = $this->groupService->collection();
         return response()->json($group);
     }
 
     public function store(Upsert $request)
     {
-        $group = $this->groupService->create($request);
-        
+        $group = $this->groupService->store($request);
         return response()->json($group, 200);
     }
 
     public function show(string $id)
     {
          
-        $groupMembers = $this->groupService->getGroupMembers($id);
+        $groupMembers = $this->groupService->resource($id);
         if(isset($groupMembers['errors'])){
             return response()->json($groupMembers,400);
         }else{

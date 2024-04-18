@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupMemberService
 {
-   public function getGroupMember(){
+   public function collection(){
         return GroupMember::all();
    }
 
-   public function addMembers( $id, $inputs){
+   public function store( $id, $inputs){
        
     // dd($inputs,$id);
     // $groupData = json_decode($id, true);  

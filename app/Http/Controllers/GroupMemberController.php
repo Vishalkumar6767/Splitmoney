@@ -20,7 +20,7 @@ class GroupMemberController extends Controller
     }
     public function index()
     {
-        $groupMembers = $this->groupMember->getGroupMember();
+        $groupMembers = $this->groupMember->collection();
         return response()->json($groupMembers);
     }
 
@@ -30,7 +30,7 @@ class GroupMemberController extends Controller
      */
     public function store(Group $group, GroupMember $request)
     {
-        $GroupMember = $this->groupMember->addMembers($group->id,$request);
+        $GroupMember = $this->groupMember->store($group->id,$request);
         return response()->json($GroupMember, 200);
     }
 
