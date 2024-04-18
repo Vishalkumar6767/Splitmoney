@@ -11,10 +11,11 @@ class GroupService
     public function getAllGroup()
     {  
         $userId = Auth::id();
-        $userGroup = DB::table('groups')
+        $groupList = DB::table('groups')
         ->where('created_by',$userId)
         ->get();
-        return $userGroup;
+        return $groupList;  
+       
     }
 
     public function create($inputs)
@@ -36,5 +37,16 @@ class GroupService
             'owner' => $user
         ]); // Redirect with success message
     }
+
+    public function getGroupMembers($id){
+       
+        $groups = Group::whereHas('users', function ($query) use ($id) {
+         $query->where('group_id', $id);
+        })->with('users')->get();
+        // $groups = Group::with(['users' => function ($query) use ($id) {
+        //     $query->where('group_id', $id);
+        // }])->get();
+        return $groups;
+    }   
    
 }

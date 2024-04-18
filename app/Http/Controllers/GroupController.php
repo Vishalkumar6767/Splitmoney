@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     protected $groupService;
 
     public function __construct(GroupService $groupService)
@@ -29,20 +27,23 @@ class GroupController extends Controller
         return response()->json($group);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-
     public function store(Upsert $request)
     {
         $group = $this->groupService->create($request);
-        // $group = Group::create($request->validated());
+        
         return response()->json($group, 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    public function show(string $id)
+    {
+         
+        $groupMembers = $this->groupService->getGroupMembers($id);
+        if(isset($groupMembers['errors'])){
+            return response()->json($groupMembers,400);
+        }else{
+            return response()->json($groupMembers, 200);
+        }  
+    }
     public function update(Upsert $request, $id)
     {
 

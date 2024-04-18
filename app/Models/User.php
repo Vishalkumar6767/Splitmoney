@@ -45,8 +45,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
         ];
     }
-    public function creator()
+    public function groups()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+    public function group()
+    {
+        return $this->belongsToMany(Group::class, 'group_members');
     }
 }

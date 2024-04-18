@@ -17,10 +17,12 @@ Route::post('/logout', [AuthController::class, 'logout']);
 
 
 
-Route::get('/group', [GroupController::class, 'index']);
+Route::get('/groups', [GroupController::class, 'index']);
 Route::post('/group', [GroupController::class, 'store']);
 Route::put('/group/{id}', [GroupController::class, 'update']);
 Route::delete('/group/{id}', [GroupController::class, 'destroy']);
+Route::get('/groups/{group}', [GroupController::class,'show']);
+
 
 Route::post('/invite-group-member', [InviteGroupMemberController::class, 'store']);
 Route::get('/invite-group-member', [InviteGroupMemberController::class, 'index']);

@@ -39,28 +39,9 @@ class Group extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function members()
+    public function users()
     {
-        return $this->belongsToMany(User::class, 'group_user');
+        return $this->belongsToMany(User::class, 'group_members');
     }
 
-
-
-
-    // public function creator()
-    // {
-    //     return $this->belongsTo(User::class, 'created_by');
-    // }
-
-    // protected static function boot()
-    // {
-    //     parent::boot();
-
-    //     static::creating(function ($group) {
-    //         // If the user is authenticated, set the created_by attribute to the current user's ID
-    //         if (auth()->check()) {
-    //             $group->created_by = auth()->id();
-    //         }
-    //     });
-    // }
 }
