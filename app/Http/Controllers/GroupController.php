@@ -2,20 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Group\Upsert;
 use App\Services\GroupService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 
 class GroupController extends Controller
 {
-    
     protected $groupService;
-
     public function __construct(GroupService $groupService)
     {
         $this->groupService = $groupService;
@@ -23,39 +17,39 @@ class GroupController extends Controller
 
     public function index()
     {
-        $group = $this->groupService->collection();
-        return response()->json($group);
+        $data = $this->groupService->collection();
+        if (isset($data['errors'])) {
+            return response()->json($data);
+        }
+        return response()->json($data);
     }
 
     public function store(Upsert $request)
     {
-        $group = $this->groupService->store($request);
-        return response()->json($group, 200);
+        $data = $this->groupService->store($request);
+        if (isset($data['errors'])) {
+            return response()->json($data, 200);
+        }
+        return response()->json($data, 200);
     }
 
     public function show(string $id)
     {
-         
         $groupMembers = $this->groupService->resource($id);
-        if(isset($groupMembers['errors'])){
-            return response()->json($groupMembers,400);
-        }else{
-            return response()->json($groupMembers, 200);
-        }  
+        if (isset($groupMembers['errors'])) {
+            return response()->json($groupMembers, 400);
+        }
+        return response()->json($groupMembers, 200);
     }
-    public function update(Upsert $request, $id)
+    public function update($id, Upsert $request)
     {
-
-        $group = Group::findOrFail($id);
-        $validatedData = $request->validated();
-        $group->update($validatedData);
-        return response()->json($group, 200);
+        $data = $this->groupService->update($id, $request->validated());
+        return response()->json($data, 200);
     }
 
     public function destroy($id)
     {
-        $group = Group::findOrFail($id);
-        $group->delete();
-        return response()->json(['data'=>"Group Deleted Successfully"],200);   
+        $data = $this->groupService->delete($id);
+        return response()->json($data, 200);
     }
 }

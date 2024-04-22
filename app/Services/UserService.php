@@ -6,10 +6,8 @@ use App\Models\User;
 
 class UserService
 {
-    public function getAllUsers()
+    public function collection()
     {
         return User::all();
     }
 }
-
-

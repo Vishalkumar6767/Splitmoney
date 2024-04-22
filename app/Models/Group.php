@@ -39,7 +39,7 @@ class Group extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function users()
+    public function members()
     {
         return $this->belongsToMany(User::class, 'group_members');
     }

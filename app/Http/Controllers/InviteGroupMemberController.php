@@ -9,9 +9,7 @@ use App\Services\InviteGroupMemberService;
 class InviteGroupMemberController extends Controller
 {
 
-
     protected $inviteGroupMembers;
-
     public function __construct(InviteGroupMemberService $inviteGroupMembers)
     {
         $this->inviteGroupMembers = $inviteGroupMembers;
@@ -19,18 +17,23 @@ class InviteGroupMemberController extends Controller
 
     public function index()
     {
-        $inviteGroupMembers = $this->inviteGroupMembers->getGroupMember();
-        return response()->json($inviteGroupMembers);
+        $data = $this->inviteGroupMembers->collection();
+        if(isset($data['errors'])){
+            return response()->json($data,400);
+        }else{
+            return response()->json($data,200);
+        }
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
 
     public function store(InviteMembers $request)
     {
-        $inviteGroupMembers = $this->inviteGroupMembers->inviteGroupMembers($request);
-        return response()->json($inviteGroupMembers, 200);
+        $data = $this->inviteGroupMembers->store($request);
+        if(isset($data['errors'])){
+            return response()->json($data, 400);
+        }else{
+            return response()->json($data, 200);
+        }
+        
     }
 
     /**

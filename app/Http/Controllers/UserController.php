@@ -20,7 +20,7 @@ class UserController extends Controller
     public function index()
     {
         // Call the getAllUsers method of the userService
-        $users = $this->userService->getAllUsers();
+        $users = $this->userService->collection();
         return response()->json($users);
     }
 
@@ -29,27 +29,20 @@ class UserController extends Controller
      */
     public function store(Upsert $request)
     {
-
-
-        $user = User::create($request->validated());
-
-
-        return response()->json($user, 201);
+        $data = User::create($request->validated());
+        if(isset($data['errors'])){
+            return response()->json($data, 400);
+        }
+        return response()->json($data, 200);
+              
     }
 
     // Implement other controller methods as needed
     public function update(Upsert $request, $id)
     {
-
         $user = User::findOrFail($id);
-
-
         $validatedData = $request->validated();
-
-
         $user->update($validatedData);
-
-        // Return the updated user
         return response()->json($user, 200);
     }
 

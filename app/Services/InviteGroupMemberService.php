@@ -7,16 +7,16 @@ use App\Models\InviteGroupMember;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+
 class InviteGroupMemberService
 {
 
-    public function getGroupMember()
+    public function collection()
     {
         return InviteGroupMember::all();
     }
-    public function inviteGroupMembers($inputs)
+    public function store($inputs)
     {
-
         $token = Str::uuid();
         $invitation = InviteGroupMember::create([
             'user_id' => Auth::id(),
@@ -27,9 +27,8 @@ class InviteGroupMemberService
 
         $invitationLink = config('site.frontWebsiteUrl') . '?token=' . $token;
         Mail::to($inputs->email)->send(new SendMail($invitationLink));
-        return response()->json([
-            'message' => 'Invitation sent successfully',
-            'token'=>$token
-        ], 200);
+        $data['message'] = "Invitation sent successfully";
+        $data['token'] = $token;
+        return $data;
     }
 }
