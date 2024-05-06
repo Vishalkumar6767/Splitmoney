@@ -21,7 +21,10 @@ class GroupMemberController extends Controller
     public function index()
     {
         $groupMembers = $this->groupMember->collection();
-        return response()->json($groupMembers);
+        if(isset($groupMembers['errors'])){
+            return response()->json($groupMembers,400);  
+        }
+        return response()->json($groupMembers,200);
     }
 
   
@@ -31,6 +34,9 @@ class GroupMemberController extends Controller
     public function store(Group $group, GroupMember $request)
     {
         $GroupMember = $this->groupMember->store($group->id,$request);
+        if(isset($GroupMember['errors'])){
+            return response()->json($GroupMember, 400);  
+        }
         return response()->json($GroupMember, 200);
     }
 

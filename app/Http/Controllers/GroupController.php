@@ -19,16 +19,16 @@ class GroupController extends Controller
     {
         $data = $this->groupService->collection($request);
         if (isset($data['errors'])) {
-            return response()->json($data);
+            return response()->json($data,400);
         }
-        return response()->json($data);
+        return response()->json($data,200);
     }
 
     public function store(Upsert $request)
     {
         $data = $this->groupService->store($request);
         if (isset($data['errors'])) {
-            return response()->json($data, 200);
+            return response()->json($data, 400);
         }
         return response()->json($data, 200);
     }
@@ -44,12 +44,18 @@ class GroupController extends Controller
     public function update($id, Upsert $request)
     {
         $data = $this->groupService->update($id, $request->validated());
+        if(isset($data['errors'])){
+            return response()->json($data, 400); 
+        }
         return response()->json($data, 200);
     }
 
     public function destroy($id)
     {
         $data = $this->groupService->delete($id);
+        if(isset($data['errors'])){
+            return response()->json($data, 400);
+        }
         return response()->json($data, 200);
     }
 }

@@ -7,7 +7,6 @@ use App\Http\Requests\Auth\SignUp;
 use App\Http\Requests\Auth\LoginUser;
 use App\Http\Requests\Auth\SendOtp;
 
-
 class AuthController extends Controller
 {
     protected $authService;
