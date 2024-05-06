@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Group\Upsert;
 use App\Services\GroupService;
-
+use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
@@ -15,9 +15,9 @@ class GroupController extends Controller
         $this->groupService = $groupService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->groupService->collection();
+        $data = $this->groupService->collection($request);
         if (isset($data['errors'])) {
             return response()->json($data);
         }

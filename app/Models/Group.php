@@ -9,7 +9,7 @@ class Group extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'group_name',
+        'name',
         'description',
         'created_by',
 
@@ -34,7 +34,7 @@ class Group extends Model
     {
         return [];
     }
-    public function owner()
+    public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

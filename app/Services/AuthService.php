@@ -65,13 +65,12 @@ class AuthService
             return $data;
         }
     }
-
+    
     public function sendOtp($inputs)
     {
-        $phoneNo = $inputs['phone_no'];
         $otp = mt_rand(100000, 999999);
         UserOtp::create([
-            'phone_no' => $phoneNo,
+            'phone_no' => $inputs['phone_no'],
             'otp' => $otp,
             'type' => $inputs['type'],
         ]);

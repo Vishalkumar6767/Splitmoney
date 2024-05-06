@@ -4,14 +4,12 @@ namespace App\Services;
 
 use App\Models\Group;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-
 
 class GroupService
 {
-    public function collection()
+    public function collection($inputs)
     {
-        $userId = Auth::id();
+        $userId =  auth()->id();
         $groups = Group::where('created_by', $userId)->get();
         return $groups;
     }
@@ -19,12 +17,12 @@ class GroupService
     public function store($inputs)
     {
         $group = Group::create([
-            'group_name' => $inputs->group_name,
-            'description' => $inputs->description,
-            'created_by' => Auth::id(),
+            'name' => $inputs['name'],
+            'description' => $inputs['description'],
+            'created_by' => auth()->id(),
             // Automatically set to logged-in user
         ]);
-        $user = User::select('name', 'email', 'phone_no')->find(Auth::id());
+        $user = User::select('name', 'email', 'phone_no')->findOrFail(auth()->id());
         return [
             'group' => $group,
             'owner' => $user

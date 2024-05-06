@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('group_name');
+            $table->string('name');
             $table->dateTime('start_date')->default(now());
             $table->timestamp('end_date')->nullable();
             $table->string('description');

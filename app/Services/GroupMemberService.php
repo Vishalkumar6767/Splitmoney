@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\Models\GroupMember;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class GroupMemberService
 {
@@ -22,7 +19,7 @@ class GroupMemberService
                 ->where('user_id', $userId)
                 ->first();
             if ($existingGroupMember) {
-                $groupMembers[] = $existingGroupMember;
+                $groupMembers[] = $existingGroupMember;    
             } else {
                 $newGroupMember = GroupMember::create([
                     'group_id' => $id,
@@ -31,6 +28,7 @@ class GroupMemberService
                 $groupMembers[] = $newGroupMember;
             }
         }
-        return $groupMembers;
+       $success['message'] = "Members are added successfully in the group";
+        return $success;
     }
 }

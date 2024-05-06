@@ -9,7 +9,7 @@ use App\Services\UserService; // Import the UserService class
 class UserController extends Controller
 {
 
-    protected $userService; 
+    protected $userService;
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
@@ -21,7 +21,10 @@ class UserController extends Controller
     {
         // Call the getAllUsers method of the userService
         $users = $this->userService->collection();
-        return response()->json($users);
+        if (isset($users['errors'])) {
+            return response()->json($users, 400);
+        }
+        return response()->json($users, 200);
     }
 
     /**
@@ -30,27 +33,29 @@ class UserController extends Controller
     public function store(Upsert $request)
     {
         $data = User::create($request->validated());
-        if(isset($data['errors'])){
+        if (isset($data['errors'])) {
             return response()->json($data, 400);
         }
         return response()->json($data, 200);
-              
     }
 
     // Implement other controller methods as needed
-    public function update(Upsert $request, $id)
+    public function update($id, Upsert $request)
     {
-        $user = User::findOrFail($id);
-        $validatedData = $request->validated();
-        $user->update($validatedData);
-        return response()->json($user, 200);
+        $data = $this->userService->update($id, $request->validated());
+        if (isset($data['errors'])) {
+            return response()->json($data, 400);
+        }
+        return response()->json($data, 200);
     }
 
     public function destroy($id)
     {
         // You can implement logic to delete a specific user here `
-        $user = User::findOrFail($id);
-        $user = $user->delete();
+        $data = $this->userService->delete($id);
+        if (isset($data['errors'])) {
+            return response()->json($data, 400);
+        }
         $message = 'User deleted successfully';
         return response()->json(['message' => $message], 200);
     }
