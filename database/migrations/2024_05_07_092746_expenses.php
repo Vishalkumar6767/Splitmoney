@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invite_group_members', function (Blueprint $table) {
+        Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('group_id');
-            $table->unsignedBigInteger('user_id');
-            $table->string('email', 255);
-            $table->string('token', 255)->unique();
-            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('group_id')->references('id')->on('groups');
+            $table->unsignedBigInteger('payer_user_id');
+            $table->foreign('payer_user_id')->references('id')->on('users');
+            $table->float('amount');
+            $table->string('description');
+            $table->date('date');
             $table->timestamps();
         });
     }
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('invite_group_members');
+        Schema::dropIfExists('expenses');
     }
 };

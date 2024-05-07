@@ -3,6 +3,7 @@
 use App\Http\Controllers\InviteGroupMemberController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\UserController;
@@ -23,4 +24,6 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/invite-group-member', [InviteGroupMemberController::class, 'index']);
     //Add members in Group routes
     Route::resource('group-members', GroupMemberController::class);
+    //Expense routes
+    Route::resource('expenses',ExpenseController::class);
 });
