@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Group\InviteMembers;
+use App\Http\Requests\Group\InviteMembers as InviteMemberRequest;
 use App\Services\InviteGroupMemberService;
 
 class InviteGroupMemberController extends Controller
@@ -24,7 +24,7 @@ class InviteGroupMemberController extends Controller
         }
     }
 
-    public function store(InviteMembers $request)
+    public function store(InviteMemberRequest $request)
     {
         $data = $this->inviteGroupMembers->store($request);
         if (isset($data['errors'])) {

@@ -34,7 +34,7 @@ class Group extends Model
     {
         return [];
     }
-    public function user()
+    public function owner()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

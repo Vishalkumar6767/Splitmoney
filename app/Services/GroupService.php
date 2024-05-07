@@ -3,58 +3,67 @@
 namespace App\Services;
 
 use App\Models\Group;
-use App\Models\User;
 
 class GroupService
 {
     public function collection($inputs)
     {
-        $userId =  auth()->id();
-        $groups = Group::where('created_by', $userId)->get();
-        return $groups;
+        $includes = [];
+        if (!empty($inputs['includes'])) {
+            $includes = explode(",", $inputs['includes']);
+        }
+
+        $data = Group::with($includes)->auth()->id();
+        // We use explode function to convert the string into an array element
+
+        $data = Group::where('created_by', auth()->id())->get();
+        $data = $data->get();
+        return $data;
     }
 
     public function store($inputs)
     {
-        $group = Group::create([
+        $data = Group::create([
             'name' => $inputs['name'],
             'description' => $inputs['description'],
             'created_by' => auth()->id(),
             // Automatically set to logged-in user
         ]);
-        $user = User::select('name', 'email', 'phone_no')->findOrFail(auth()->id());
         return [
-            'group' => $group,
-            'owner' => $user
+            'group' => $data,
+            'owner' => auth()->user()
         ];
     }
 
     public function resource($id)
     {
 
-        $group = Group::with('members')->findOrFail($id);
-        return $group;
+        $data = Group::with('members')->findOrFail($id);
+        return $data;
     }
     public function update($id, $inputs)
     {
-        $group = $this->resource($id);
-        if (empty($group)) {
-            $error['message'] = "Group not found";
-            $error['code'] = 400;
+        $data = $this->resource($id);
+        if (empty($data)) {
+            $error['errors'] = [
+                'message' => "Group not found",
+                'code' => 400
+            ];
             return $error;
         }
-        $group->update($inputs);
-        return $group;
+        $data->update($inputs);
+        $success['message'] = "Group Updated successfully";
+        return $success;
     }
 
     public function delete($id)
     {
-        $group = $this->resource($id);
-        if (isset($group['error'])) {
-            return $group;
+        $data = $this->resource($id);
+        if (isset($data['errors'])) {
+            return $data;
         }
-        $group->delete();
-        $data['message'] = "Group deleted successfully";
-        return $data;
+        $data->delete();
+        $success['message'] = "Group deleted successfully";
+        return $success;
     }
 }

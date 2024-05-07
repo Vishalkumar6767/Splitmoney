@@ -22,6 +22,5 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/invite-group-member', [InviteGroupMemberController::class, 'store']);
     Route::get('/invite-group-member', [InviteGroupMemberController::class, 'index']);
     //Add members in Group routes
-    Route::post('/groups/{group}/user', [GroupMemberController::class, 'store']);
-    Route::get('/groups/{group}/user', [GroupMemberController::class, 'index']);
+    Route::resource('group-members', GroupMemberController::class);
 });

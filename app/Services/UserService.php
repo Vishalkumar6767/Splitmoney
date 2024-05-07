@@ -17,7 +17,7 @@ class UserService
     }
     public function store($inputs)
     {
-        $data = $this->userObject->create([
+       $this->userObject->create([
             'name' => $inputs['name'],
             'email' => $inputs['email'],
             'phone_no' => $inputs['phone_no'],

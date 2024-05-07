@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserOtp;
-use Illuminate\Support\Facades\Auth;
 use App\Models\InviteGroupMember;
 use App\Models\GroupMember;
 use Exception;
@@ -65,7 +64,7 @@ class AuthService
             return $data;
         }
     }
-    
+
     public function sendOtp($inputs)
     {
         $otp = mt_rand(100000, 999999);
@@ -83,9 +82,11 @@ class AuthService
     {
         $user = User::where('phone_no', $inputs['phone_no'])->first();
         if (!$user) {
-            $error['message'] = "Invalid User";
-            $error['code'] = 400;
-            return $error;
+            $errors['errors'] = [
+                'message' => "Invalid User",
+                'code' => 400
+            ];
+            return $errors;
         }
         $userOtp = UserOtp::where('phone_no', $inputs['phone_no'])
             ->where('otp', $inputs['otp'])
@@ -94,9 +95,11 @@ class AuthService
             ->latest()
             ->first();
         if (!$userOtp) {
-            $error['message'] = "Invalid Otp";
-            $error['code'] = 400;
-            return $error;
+            $errors['errors'] = [
+                'message' => "Invalid Otp",
+                'code' => 400
+            ];
+            return $errors;
         }
         $data = [];
         if ($userOtp->otp == $inputs['otp']) {
@@ -112,7 +115,7 @@ class AuthService
     }
     public function logout()
     {
-        $user = Auth::user();
+        $user = auth()->user();
         $user->tokens()->delete();
         $data['message'] = 'Successfully logged out';
         return $data;

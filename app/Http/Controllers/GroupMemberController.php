@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Services\GroupMemberService;
 use Illuminate\Http\Request;
 use App\Models\Group;
-use App\Http\Requests\Group\GroupMember;
+use App\Http\Requests\Group\GroupMember as GroupMemberRequest;
 
 class GroupMemberController extends Controller
 {
@@ -18,22 +18,20 @@ class GroupMemberController extends Controller
     {
         $this->groupMember = $groupMemberService;
     }
-    public function index()
+    public function index(Request $request)
     {
-        $groupMembers = $this->groupMember->collection();
+        $groupMembers = $this->groupMember->collection($request);
         if(isset($groupMembers['errors'])){
             return response()->json($groupMembers,400);  
         }
         return response()->json($groupMembers,200);
     }
-
-  
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Group $group, GroupMember $request)
+    public function store(GroupMemberRequest $request)
     {
-        $GroupMember = $this->groupMember->store($group->id,$request);
+        $GroupMember = $this->groupMember->store($request->validated());
         if(isset($GroupMember['errors'])){
             return response()->json($GroupMember, 400);  
         }
