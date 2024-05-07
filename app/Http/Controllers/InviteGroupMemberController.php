@@ -18,7 +18,7 @@ class InviteGroupMemberController extends Controller
     {
         $data = $this->inviteGroupMembers->collection();
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         } else {
             return response()->json($data, 200);
         }
@@ -28,7 +28,7 @@ class InviteGroupMemberController extends Controller
     {
         $data = $this->inviteGroupMembers->store($request);
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         } else {
             return response()->json($data, 200);
         }

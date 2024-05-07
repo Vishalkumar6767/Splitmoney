@@ -20,7 +20,7 @@ class AuthController extends Controller
         $data = $this->authService->signup($request);
 
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         }
         return response()->json($data, 200);
     }
@@ -29,7 +29,7 @@ class AuthController extends Controller
     {
         $userOtp = $this->authService->sendOtp($request);
         if (isset($userOtp['errors'])) {
-            return response()->json($userOtp, 400);
+            return response()->json($userOtp['errors'], 400);
         }
         return response()->json($userOtp, 200);
     }
@@ -38,7 +38,7 @@ class AuthController extends Controller
     {
         $data = $this->authService->login($request);
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         }
         return response()->json($data, 200);
     }
@@ -47,7 +47,7 @@ class AuthController extends Controller
     {
         $user = $this->authService->logout();
         if (isset($user['errors'])) {
-            return response()->json($user, 400);
+            return response()->json($user['errors'], 400);
         }
         return response()->json($user, 200);
     }

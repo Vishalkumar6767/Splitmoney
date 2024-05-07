@@ -20,9 +20,9 @@ class GroupMemberController extends Controller
     }
     public function index(Request $request)
     {
-        $groupMembers = $this->groupMember->collection($request);
+        $groupMembers = $this->groupMember->collection($request->all());
         if(isset($groupMembers['errors'])){
-            return response()->json($groupMembers,400);  
+            return response()->json($groupMembers['errors'],400);  
         }
         return response()->json($groupMembers,200);
     }
@@ -33,40 +33,9 @@ class GroupMemberController extends Controller
     {
         $GroupMember = $this->groupMember->store($request->validated());
         if(isset($GroupMember['errors'])){
-            return response()->json($GroupMember, 400);  
+            return response()->json($GroupMember['errors'], 400);  
         }
         return response()->json($GroupMember, 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

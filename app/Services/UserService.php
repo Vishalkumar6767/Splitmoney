@@ -12,7 +12,7 @@ class UserService
     }
     public function collection()
     {
-        $users = $this->userObject->all(['name','email','phone_no']);
+        $users = $this->userObject->all();
         return $users;
     }
     public function store($inputs)

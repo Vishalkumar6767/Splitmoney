@@ -9,15 +9,12 @@ class GroupService
     public function collection($inputs)
     {
         $includes = [];
-        if (!empty($inputs['includes'])) {
+        if (!empty($inputs['includes']))
+        {
             $includes = explode(",", $inputs['includes']);
         }
-
-        $data = Group::with($includes)->auth()->id();
-        // We use explode function to convert the string into an array element
-
-        $data = Group::where('created_by', auth()->id())->get();
-        $data = $data->get();
+        $data = Group::with($includes);
+        $data = $data->where('created_by',auth()->id())->get();
         return $data;
     }
 

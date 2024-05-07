@@ -22,7 +22,7 @@ class UserController extends Controller
         // Call the getAllUsers method of the userService
         $users = $this->userService->collection();
         if (isset($users['errors'])) {
-            return response()->json($users, 400);
+            return response()->json($users["errors"], 400);
         }
         return response()->json($users, 200);
     }
@@ -34,7 +34,7 @@ class UserController extends Controller
     {
         $data = User::create($request->validated());
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         }
         return response()->json($data, 200);
     }
@@ -44,7 +44,7 @@ class UserController extends Controller
     {
         $data = $this->userService->update($id, $request->validated());
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         }
         return response()->json($data, 200);
     }
@@ -54,7 +54,7 @@ class UserController extends Controller
         // You can implement logic to delete a specific user here `
         $data = $this->userService->delete($id);
         if (isset($data['errors'])) {
-            return response()->json($data, 400);
+            return response()->json($data['errors'], 400);
         }
         $message = 'User deleted successfully';
         return response()->json(['message' => $message], 200);
