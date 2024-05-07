@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Expense\UpsertRequest;
 use App\Services\ExpenseService;
+use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
@@ -17,10 +18,10 @@ class ExpenseController extends Controller
         $this->expenseService = $expenseService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->expenseService->collection();
-        if (isset(($data['errors']))) {
+        $data = $this->expenseService->collection($request->all());
+        if (isset($data['errors'])) {
             return response()->json($data['errors'], 400);
         }
         return response()->json($data, 200);

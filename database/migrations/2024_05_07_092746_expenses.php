@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('payer_user_id');
             $table->foreign('payer_user_id')->references('id')->on('users');
             $table->float('amount');
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->date('date');
             $table->timestamps();
         });

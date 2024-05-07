@@ -41,13 +41,6 @@ class GroupService
     public function update($id, $inputs)
     {
         $data = $this->resource($id);
-        if (empty($data)) {
-            $error['errors'] = [
-                'message' => "Group not found",
-                'code' => 400
-            ];
-            return $error;
-        }
         $data->update($inputs);
         $success['message'] = "Group Updated successfully";
         return $success;
@@ -56,9 +49,6 @@ class GroupService
     public function delete($id)
     {
         $data = $this->resource($id);
-        if (isset($data['errors'])) {
-            return $data;
-        }
         $data->delete();
         $success['message'] = "Group deleted successfully";
         return $success;

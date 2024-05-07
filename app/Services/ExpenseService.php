@@ -15,9 +15,15 @@ class ExpenseService
         $this->expenseObject = $expenseObject;
     }
 
-    public function collection()
+    public function collection($inputs)
     {
-        $data = $this->expenseObject->all();
+        $includes = [];
+        if (!empty($inputs['includes']))
+        {
+            $includes = explode(",", $inputs['includes']);
+        }
+        $data = $this->expenseObject->with($includes);
+        $data = $data->where('group_id',$inputs['group_id'])->get();
         return $data;
     }
 
@@ -29,7 +35,6 @@ class ExpenseService
             'amount' => $inputs['amount'],
             'description' => $inputs['description'],
             'date' => $inputs['date']
-
         ]);
         $success['message'] = "Data added successfully";
         return $success;
@@ -44,13 +49,6 @@ class ExpenseService
     public function update($id, $inputs)
     {
         $data = $this->resource($id);
-        if (empty($data)) {
-            $error['errors'] = [
-                'message' => "Expense not found",
-                'code' => 400
-            ];
-            return $error;
-        }
         $data->update($inputs);
         $success['message'] = "Data updated successfully";
         return $success;
@@ -59,9 +57,6 @@ class ExpenseService
     public function delete($id)
     {
         $data = $this->resource($id);
-        if (isset($data['errors'])) {
-            return $data;
-        }
         $data->delete();
         $success['message'] = "Expense deleted successfully";
         return $success;

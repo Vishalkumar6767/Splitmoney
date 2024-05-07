@@ -25,8 +25,8 @@ class UpsertRequest extends FormRequest
             'group_id'=>'required|exists:groups,id',
             'payer_user_id'=>'required|exists:users,id',
             'amount'=>'required|numeric',
-            'description'=>'required',
-            'date'=>'date'
+            'description'=>'nullable',
+            'date'=>'date|date_format:Y-m-d'
            
         ];
     }
