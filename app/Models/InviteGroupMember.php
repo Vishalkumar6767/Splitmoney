@@ -14,7 +14,6 @@ class InviteGroupMember extends Model
         'group_id',
         'email',
         'token'
-
     ];
     public function group()
     {

@@ -14,15 +14,6 @@ class Resource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
-            'id' => $this->id,
-            'group_name' => $this->group_name,
-            'description' => $this->description,
-            'start_date' => $this->start_date,
-            'end_date' => $this->end_date,
-
-
-
-        ];
+        return parent::toArray($request);
     }
 }

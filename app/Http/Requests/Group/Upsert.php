@@ -24,12 +24,9 @@ class Upsert extends FormRequest
     {
 
         return [
-            'group_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
         ];
     }
-    public function groups()
-    {
-        return $this->hasMany(Group::class, 'created_by');
-    }
+  
 }

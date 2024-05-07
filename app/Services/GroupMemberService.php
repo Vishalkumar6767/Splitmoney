@@ -3,39 +3,43 @@
 namespace App\Services;
 
 use App\Models\GroupMember;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Group;
 
 class GroupMemberService
 {
-   public function getGroupMember(){
-        return GroupMember::all();
-   }
+    public function collection($inputs)
+    {
+        $includes = [];
+        if (!empty($inputs['includes']))
+        {
+            $includes = explode(",", $inputs['includes']);
+            /* We use explode function to convert the string into an array element//
+            for getting the group members and  owner details type owner and members in params*/
+        }
 
-   public function addMembers( $id, $inputs){
-       
-    // dd($inputs,$id);
-    // $groupData = json_decode($id, true);  
-    // $groupId = $groupData['id'];
-    $groupMembers= [];
-
-    foreach($inputs['user_id'] as $userId){
-        $existingGroupMember = GroupMember::where('group_id',$id)
-                                            ->where('user_id',$userId)
-                                            ->first();
-
-        if($existingGroupMember){
-            $groupMembers[] = $existingGroupMember;
-        }else{
-            $newGroupMember = GroupMember::create([
-                'group_id'=>$id,
-                'user_id'=>$userId,
-            ]);
-            $groupMembers[] = $newGroupMember;
-        }  
+        $data = Group::with($includes);
+        $data = $data->get();
+        return $data;
     }
-    return $groupMembers;       
-}
 
+    public function store($inputs)
+    {
+        $groupMembers = [];
+        foreach ($inputs['user_id'] as $userId) {
+            $existingGroupMember = GroupMember::where('group_id', $inputs['group_id'])
+                ->where('user_id', $userId)
+                ->first();
+            if ($existingGroupMember) {
+                $groupMembers[] = $existingGroupMember;    
+            } else {
+                $newGroupMember = GroupMember::create([
+                    'group_id' => $inputs['group_id'],
+                    'user_id' => $userId,
+                ]);
+                $groupMembers[] = $newGroupMember;
+            }
+        }
+       $success['message'] = "Members are added successfully in the group";
+        return $success;
+    }
 }

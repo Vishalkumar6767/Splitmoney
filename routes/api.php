@@ -1,33 +1,26 @@
 <?php
 
 use App\Http\Controllers\InviteGroupMemberController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
+use App\Http\Controllers\UserController;
 
-Route::resource('/user', 'App\Http\Controllers\UserController')->except(['create', 'edit']);
-
+//User Routes
+Route::resource('/users', UserController::class)->except(['create', 'edit']);
+//Auth Routes
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::get('/send-otp', [AuthController::class, 'sendOtp']);
-Route::post('/login', [AuthController::class, 'loginUser']);
-Route::get('/login', [AuthController::class, 'loginUser']);
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
-
-
-Route::get('/group', [GroupController::class, 'index']);
-Route::post('/group', [GroupController::class, 'store']);
-Route::put('/group/{id}', [GroupController::class, 'update']);
-Route::delete('/group/{id}', [GroupController::class, 'destroy']);
-
-Route::post('/invite-group-member', [InviteGroupMemberController::class, 'store']);
-Route::get('/invite-group-member', [InviteGroupMemberController::class, 'index']);
-
-Route::post('/add-group-member', [GroupMemberController::class, 'store']);
-Route::get('/group-member', [GroupMemberController::class, 'index']);
-
-Route::post('/groups/{group}/user', [GroupMemberController::class, 'store']);
-Route::get('/groups/{group}/user', [GroupMemberController::class, 'index']);
-
+Route::middleware('auth:api')->group(function () {
+    //Group Routes
+    Route::resource('groups', GroupController::class);
+    // Invite Group member routes
+    Route::post('/invite-group-member', [InviteGroupMemberController::class, 'store']);
+    Route::get('/invite-group-member', [InviteGroupMemberController::class, 'index']);
+    //Add members in Group routes
+    Route::resource('group-members', GroupMemberController::class);
+});
