@@ -1,40 +1,56 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\Group;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class GroupService
 {
-    public function getAllGroup()
-    {  
-        $userId = Auth::id();
-        $userGroup = DB::table('groups')
-        ->where('created_by',$userId)
-        ->get();
-        return $userGroup;
+    public function collection($inputs)
+    {
+        $includes = [];
+        if (!empty($inputs['includes']))
+        {
+            $includes = explode(",", $inputs['includes']);
+        }
+        $data = Group::with($includes);
+        $data = $data->where('created_by',auth()->id())->get();
+        return $data;
     }
 
-    public function create($inputs)
+    public function store($inputs)
     {
-        // $user = DB::table('users')->where('name', Auth::id())->get();
-        $group = new Group([
-            'group_name' => $inputs->group_name,
-            'description' => $inputs->description,
-            'created_by' => Auth::id(),
-             // Automatically set to logged-in user
+        $data = Group::create([
+            'name' => $inputs['name'],
+            'description' => $inputs['description'],
+            'created_by' => auth()->id(),
+            // Automatically set to logged-in user
         ]);
-        
-        $group->save();
-        $user = DB::table('users')
-            ->select('name', 'email', 'phone_no')
-            ->find(Auth::id());
-        return response()->json([
-            'group' => $group,
-            'owner' => $user
-        ]); // Redirect with success message
+        return [
+            'group' => $data,
+            'owner' => auth()->user()
+        ];
     }
-   
+
+    public function resource($id)
+    {
+
+        $data = Group::with('members')->findOrFail($id);
+        return $data;
+    }
+    public function update($id, $inputs)
+    {
+        $data = $this->resource($id);
+        $data->update($inputs);
+        $success['message'] = "Group Updated successfully";
+        return $success;
+    }
+
+    public function delete($id)
+    {
+        $data = $this->resource($id);
+        $data->delete();
+        $success['message'] = "Group deleted successfully";
+        return $success;
+    }
 }

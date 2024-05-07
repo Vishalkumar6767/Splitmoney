@@ -2,60 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Group\Upsert;
+use App\Http\Requests\Group\Upsert as UpsertRequest;
 use App\Services\GroupService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-
 
 class GroupController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     protected $groupService;
-
     public function __construct(GroupService $groupService)
     {
         $this->groupService = $groupService;
     }
 
-    public function index()
+    public function index(Request $request)
+
     {
-        $group = $this->groupService->getAllGroup();
-        return response()->json($group);
+       
+        $data = $this->groupService->collection($request->all());
+        if (isset($data['errors'])) {
+            return response()->json($data['errors'],400);
+        }
+        return response()->json($data,200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-
-    public function store(Upsert $request)
+    public function store(UpsertRequest $request)
     {
-        $group = $this->groupService->create($request);
-        // $group = Group::create($request->validated());
-        return response()->json($group, 200);
+        $data = $this->groupService->store($request->validated());
+        if (isset($data['errors'])) {
+            return response()->json($data['errors'], 400);
+        }
+        return response()->json($data, 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function update(Upsert $request, $id)
+    public function show(int $id)
     {
-
-        $group = Group::findOrFail($id);
-        $validatedData = $request->validated();
-        $group->update($validatedData);
-        return response()->json($group, 200);
+        $groupMembers = $this->groupService->resource($id);
+        if (isset($groupMembers['errors'])) {
+            return response()->json($groupMembers['errors'], 400);
+        }
+        return response()->json($groupMembers, 200);
+    }
+    public function update($id, UpsertRequest $request)
+    {
+        $data = $this->groupService->update($id, $request->validated());
+        if(isset($data['errors'])){
+            return response()->json($data['errors'], 400); 
+        }
+        return response()->json($data, 200);
     }
 
     public function destroy($id)
     {
-        $group = Group::findOrFail($id);
-        $group->delete();
-        return response()->json(['data'=>"Group Deleted Successfully"],200);   
+        $data = $this->groupService->delete($id);
+        if(isset($data['errors'])){
+            return response()->json($data['errors'], 400);
+        }
+        return response()->json($data, 200);
     }
 }

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Group;
+namespace App\Http\Requests\Expense;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Group;
 
-class Upsert extends FormRequest
+class UpsertRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +21,13 @@ class Upsert extends FormRequest
      */
     public function rules(): array
     {
-
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'group_id'=>'required|exists:groups,id',
+            'payer_user_id'=>'required|exists:users,id',
+            'amount'=>'required|numeric',
+            'description'=>'nullable',
+            'date'=>'date|date_format:Y-m-d'
+           
         ];
     }
-  
 }
