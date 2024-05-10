@@ -68,9 +68,7 @@ class ExpenseService
 
     public function delete($id)
     {
-
         $expense = $this->resource($id);
-
         $expense->userExpenses()->delete();
         $expense->delete();
         $success['message'] = "Expense deleted successfully";
