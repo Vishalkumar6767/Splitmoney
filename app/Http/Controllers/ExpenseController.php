@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Expense\ExpenseParticipantionRequest;
 use App\Http\Requests\Expense\UpsertRequest;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;

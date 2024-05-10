@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
@@ -18,24 +19,27 @@ class ExpenseService
     public function collection($inputs)
     {
         $includes = [];
-        if (!empty($inputs['includes']))
-        {
+        if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
         $data = $this->expenseObject->with($includes);
-        $data = $data->where('group_id',$inputs['group_id'])->get();
+        $data = $data->with('userExpenses');
+        $data = $data->where('group_id', $inputs['group_id'])->get();
         return $data;
     }
 
     public function store($inputs)
     {
-        $this->expenseObject->create([
+        DB::beginTransaction();
+        $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
             'payer_user_id' => $inputs['payer_user_id'],
             'amount' => $inputs['amount'],
             'description' => $inputs['description'],
             'date' => $inputs['date']
         ]);
+        $this->addUserExpenses($inputs, $expense);
+        DB::commit();
         $success['message'] = "Data added successfully";
         return $success;
     }
@@ -48,17 +52,46 @@ class ExpenseService
 
     public function update($id, $inputs)
     {
-        $data = $this->resource($id);
-        $data->update($inputs);
+        DB::beginTransaction();
+        $expense = $this->resource($id)->update([
+            'group_id' => $inputs['group_id'],
+            'payer_user_id' => $inputs['payer_user_id'],
+            'amount' => $inputs['amount'],
+            'description' => $inputs['description'],
+            'date' => $inputs['date']
+        ]);
+        $this->addUserExpenses($inputs, $expense);
+        DB::commit();
         $success['message'] = "Data updated successfully";
         return $success;
     }
 
     public function delete($id)
     {
-        $data = $this->resource($id);
-        $data->delete();
+
+        $expense = $this->resource($id);
+
+        $expense->userExpenses()->delete();
+        $expense->delete();
         $success['message'] = "Expense deleted successfully";
         return $success;
+    }
+
+    protected function addUserExpenses($inputs, $expense)
+    {
+
+        if (!empty($inputs['user_expenses'])) {
+            $expense->userExpenses()->delete();
+            $test = null;
+            foreach ($inputs['user_expenses'] as $userExpense) {
+                // $test += $userExpense['owned_amount'];
+                // $sumAmount = array_sum(array_column($userExpense,'owned_amount'));            
+                $expenseUser =  $expense->userExpenses()->create([
+                    'user_id' => $userExpense['user_id'],
+                    'user_expense' => $expense->id,
+                    'owned_amount' => $userExpense['owned_amount']
+                ]);
+            }
+        }
     }
 }

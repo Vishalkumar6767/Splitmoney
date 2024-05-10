@@ -4,7 +4,7 @@ namespace App\Http\Requests\Expense;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpsertRequest extends FormRequest
+class ExpenseParticipantionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,17 +21,10 @@ class UpsertRequest extends FormRequest
      */
     public function rules(): array
     {
-
         return [
-            'group_id'=>'required|exists:groups,id',
-            'payer_user_id'=>'required|exists:users,id',
-            'amount'=>'required|numeric',
-            'description'=>'nullable',
-            'date'=>'date|date_format:Y-m-d',
-            'user_expenses'=>'nullable|array',
-            'user_expenses.*.user_id'=>'required',
-           'user_expenses.*.owned_amount'=>'required|numeric'
-   
+            'user_id'=>'required|exists:users,id',
+            'expense_id'=>'required|exists:expenses,id',
+            'owed_amount'=>'required|numeric'
         ];
     }
 }
