@@ -22,10 +22,10 @@ class ExpenseService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $data = $this->expenseObject->with($includes);
-        $data = $data->with('userExpenses');
-        $data = $data->where('group_id', $inputs['group_id'])->get();
-        return $data;
+        $expenses = $this->expenseObject->with($includes);
+        $expenses = $expenses->with('userExpenses');
+        $expenses = $expenses->where('group_id', $inputs['group_id'])->get();
+        return $expenses;
     }
 
     public function store($inputs)
@@ -86,7 +86,7 @@ class ExpenseService
                 // $sumAmount = array_sum(array_column($userExpense,'owned_amount'));            
                 $expenseUser =  $expense->userExpenses()->create([
                     'user_id' => $userExpense['user_id'],
-                    'user_expense' => $expense->id,
+                    'expense_id' => $expense->id,
                     'owned_amount' => $userExpense['owned_amount']
                 ]);
             }
