@@ -74,10 +74,9 @@ class ExpenseService
     }
 
     protected function addUserExpenses($inputs, $expense)
-    { 
-        $expense->userExpenses()->delete();
-        
+    {
         if (isset($inputs['user_expenses'])) {
+            $expense->userExpenses()->delete();
             if ($inputs['type'] === "EQUALLY") {
                 $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
                 foreach ($inputs['user_expenses'] as $userExpense) {
@@ -87,7 +86,8 @@ class ExpenseService
                         'owned_amount' => $ownedUserAmount
                     ]);
                 }
-            } elseif ($inputs['type'] === "UNEQUALLY") {
+            }
+            if ($inputs['type'] === "UNEQUALLY") {
                 foreach ($inputs['user_expenses'] as $userExpense) {
                     $expense->userExpenses()->create([
                         'user_id' => $userExpense['user_id'],
@@ -95,11 +95,7 @@ class ExpenseService
                         'owned_amount' => $userExpense['owned_amount']
                     ]);
                 }
-            }else{
-                $errors['errors'] = "Invalid amount type.";
-                
             }
         }
     }
-    
 }
