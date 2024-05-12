@@ -7,10 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
-    /**
-     * Create a new class instance.
-     */
     protected $expenseObject;
+
     public function __construct(Expense $expenseObject)
     {
         $this->expenseObject = $expenseObject;
@@ -28,6 +26,7 @@ class ExpenseService
         return $expenses;
     }
 
+
     public function store($inputs)
     {
         DB::beginTransaction();
@@ -35,35 +34,35 @@ class ExpenseService
             'group_id' => $inputs['group_id'],
             'payer_user_id' => $inputs['payer_user_id'],
             'amount' => $inputs['amount'],
+            'type' => $inputs['type'],
             'description' => $inputs['description'],
             'date' => $inputs['date']
         ]);
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
-        $success['message'] = "Data added successfully";
-        return $success;
+        return ['message' => "Data added successfully"];
     }
 
     public function resource($id)
     {
-        $data = $this->expenseObject->findOrFail($id);
-        return $data;
+        return $this->expenseObject->findOrFail($id);
     }
 
     public function update($id, $inputs)
     {
         DB::beginTransaction();
-        $expense = $this->resource($id)->update([
+        $expense = $this->expenseObject->findOrFail($id);
+        $expense->update([
             'group_id' => $inputs['group_id'],
             'payer_user_id' => $inputs['payer_user_id'],
             'amount' => $inputs['amount'],
+            'type' => $inputs['type'],
             'description' => $inputs['description'],
             'date' => $inputs['date']
         ]);
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
-        $success['message'] = "Data updated successfully";
-        return $success;
+        return ['message' => "Data updated successfully"];
     }
 
     public function delete($id)
@@ -71,25 +70,36 @@ class ExpenseService
         $expense = $this->resource($id);
         $expense->userExpenses()->delete();
         $expense->delete();
-        $success['message'] = "Expense deleted successfully";
-        return $success;
+        return ['message' => "Expense deleted successfully"];
     }
 
     protected function addUserExpenses($inputs, $expense)
-    {
-
-        if (!empty($inputs['user_expenses'])) {
-            $expense->userExpenses()->delete();
-            $test = null;
-            foreach ($inputs['user_expenses'] as $userExpense) {
-                // $test += $userExpense['owned_amount'];
-                // $sumAmount = array_sum(array_column($userExpense,'owned_amount'));            
-                $expenseUser =  $expense->userExpenses()->create([
-                    'user_id' => $userExpense['user_id'],
-                    'expense_id' => $expense->id,
-                    'owned_amount' => $userExpense['owned_amount']
-                ]);
+    { 
+        $expense->userExpenses()->delete();
+        
+        if (isset($inputs['user_expenses'])) {
+            if ($inputs['type'] === "EQUALLY") {
+                $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
+                foreach ($inputs['user_expenses'] as $userExpense) {
+                    $expense->userExpenses()->create([
+                        'user_id' => $userExpense['user_id'],
+                        'expense_id' => $expense->id,
+                        'owned_amount' => $ownedUserAmount
+                    ]);
+                }
+            } elseif ($inputs['type'] === "UNEQUALLY") {
+                foreach ($inputs['user_expenses'] as $userExpense) {
+                    $expense->userExpenses()->create([
+                        'user_id' => $userExpense['user_id'],
+                        'expense_id' => $expense->id,
+                        'owned_amount' => $userExpense['owned_amount']
+                    ]);
+                }
+            }else{
+                $errors['errors'] = "Invalid amount type.";
+                
             }
         }
     }
+    
 }

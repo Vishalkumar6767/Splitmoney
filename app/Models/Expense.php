@@ -13,6 +13,7 @@ class Expense extends Model
         'group_id',
         'payer_user_id',
         'amount',
+        'type',
         'description',
         'date',
     ];
@@ -22,6 +23,6 @@ class Expense extends Model
     }
     public function userExpenses()
     {
-        return $this->hasMany(ExpenseParticipation::class);
+        return $this->hasMany(ExpenseParticipation::class,'expense_id','id');
     }
 }
