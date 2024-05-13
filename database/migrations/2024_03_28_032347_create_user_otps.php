@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('user_otps', function (Blueprint $table) {
             $table->id();
-            // $table->bigInteger('user_id')->references('user_id')->on('users')->onDelete('cascade');
-            $table->bigInteger('phone_no')->references('phone_no')->on('users')->onDelete('cascade');
+            $table->string('phone_no')->references('phone_no')->on('users')->onDelete('cascade');
             $table->string('otp');
             $table->string('type')->nullable();
             $table->timestamp('verified_at')->nullable();

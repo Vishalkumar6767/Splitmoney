@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->bigInteger('phone_no')->references('phone_no')->on('user_otps')->onDelete('cascade');
+            $table->string('phone_no')->references('phone_no')->on('user_otps')->onDelete('cascade');
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

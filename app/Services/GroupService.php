@@ -3,31 +3,35 @@
 namespace App\Services;
 
 use App\Models\Group;
+use Illuminate\Support\Facades\DB;
 
 class GroupService
 {
     public function collection($inputs)
     {
         $includes = [];
-        if (!empty($inputs['includes']))
-        {
+        if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $data = Group::with($includes);
-        $data = $data->where('created_by',auth()->id())->get();
-        return $data;
+        $groups = Group::with($includes)->whereHas('members', function ($query) {
+            $query->where('user_id', auth()->id());
+        });
+
+        return $groups->get();
     }
 
     public function store($inputs)
     {
-        $data = Group::create([
+        DB::beginTransaction();
+        $group = Group::create([
             'name' => $inputs['name'],
             'description' => $inputs['description'],
             'created_by' => auth()->id(),
-            // Automatically set to logged-in user
         ]);
+        $group->members()->sync([auth()->id()]);
+        DB::commit();
         return [
-            'group' => $data,
+            'group' => $group,
             'owner' => auth()->user()
         ];
     }
@@ -35,21 +39,22 @@ class GroupService
     public function resource($id)
     {
 
-        $data = Group::with('members')->findOrFail($id);
-        return $data;
+        $group = Group::with('members')->findOrFail($id);
+        return $group;
     }
+    
     public function update($id, $inputs)
     {
-        $data = $this->resource($id);
-        $data->update($inputs);
+        $group = $this->resource($id);
+        $group->update($inputs);
         $success['message'] = "Group Updated successfully";
         return $success;
     }
 
     public function delete($id)
     {
-        $data = $this->resource($id);
-        $data->delete();
+        $group = $this->resource($id);
+        $group->delete();
         $success['message'] = "Group deleted successfully";
         return $success;
     }

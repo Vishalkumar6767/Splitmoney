@@ -21,13 +21,17 @@ class UpsertRequest extends FormRequest
      */
     public function rules(): array
     {
+
         return [
-            'group_id'=>'required|exists:groups,id',
-            'payer_user_id'=>'required|exists:users,id',
-            'amount'=>'required|numeric',
-            'description'=>'nullable',
-            'date'=>'date|date_format:Y-m-d'
-           
+            'group_id' => 'required|exists:groups,id',
+            'payer_user_id' => 'required|exists:users,id',
+            'amount' => 'required|numeric',
+            'type' => 'required|string|in:EQUALLY,UNEQUALLY',
+            'description' => 'nullable',
+            'date' => 'date|date_format:Y-m-d',
+            'user_expenses' => 'nullable|array',
+            'user_expenses.*.user_id' => 'required',
+            'user_expenses.*.owned_amount' => 'required_if:type,UNEQUALLY|numeric',
         ];
     }
 }
