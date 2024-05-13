@@ -31,8 +31,7 @@ class UpsertRequest extends FormRequest
             'date' => 'date|date_format:Y-m-d',
             'user_expenses' => 'nullable|array',
             'user_expenses.*.user_id' => 'required',
-            'user_expenses.*.owned_amount' => 'nullable|numeric'
-
+            'user_expenses.*.owned_amount' => 'required_if:type,UNEQUALLY|numeric',
         ];
     }
 }

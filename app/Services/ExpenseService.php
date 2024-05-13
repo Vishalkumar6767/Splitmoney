@@ -20,12 +20,10 @@ class ExpenseService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $expenses = $this->expenseObject->with($includes);
-        $expenses = $expenses->with('userExpenses');
-        $expenses = $expenses->where('group_id', $inputs['group_id'])->get();
+        $expenses = $this->expenseObject->with($includes, ['userExpenses'])
+            ->where('group_id', $inputs['group_id'])->get();
         return $expenses;
     }
-
 
     public function store($inputs)
     {
@@ -40,7 +38,8 @@ class ExpenseService
         ]);
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
-        return ['message' => "Data added successfully"];
+        $success['message'] = "Data added successfully";
+        return $success;
     }
 
     public function resource($id)
@@ -62,7 +61,8 @@ class ExpenseService
         ]);
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
-        return ['message' => "Data updated successfully"];
+        $success['message'] = "Data updated successfully";
+        return $success;
     }
 
     public function delete($id)
@@ -70,7 +70,8 @@ class ExpenseService
         $expense = $this->resource($id);
         $expense->userExpenses()->delete();
         $expense->delete();
-        return ['message' => "Expense deleted successfully"];
+        $success['message'] = "Expense deleted successfully";
+        return $success;
     }
 
     protected function addUserExpenses($inputs, $expense)
