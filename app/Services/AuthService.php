@@ -24,8 +24,10 @@ class AuthService
             ->latest()
             ->first();
         if (!$userOtp) {
-            $error['message'] = "Otp is invalid";
-            $error['code'] = 400;
+            $error['errors'] = [
+                'message' => "Otp is invalid",
+                'code' => 400
+            ];
             return $error;
         }
         $data = [];
