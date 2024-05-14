@@ -36,9 +36,6 @@ class InviteGroupMemberService
     {
         $invitedMember = InviteGroupMember::where('token', $inputs['token'])->first();
         $user = User::where('email', $invitedMember->email)->first();
-        $existingGroupMember = GroupMember::where('group_id', $invitedMember->group_id)
-            ->where('user_id', $user->id)
-            ->first();
         if (empty($user)) {
             $errors['errors'] = [
                 'message' => "User not Found",
@@ -46,6 +43,9 @@ class InviteGroupMemberService
             ];
             return $errors;
         }
+        $existingGroupMember = GroupMember::where('group_id', $invitedMember->group_id)
+            ->where('user_id', $user->id)
+            ->first();
         if ($existingGroupMember) {
             $message['Message'] = "User already exist in Your Group";
             return $message;
