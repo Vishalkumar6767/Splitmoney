@@ -39,7 +39,7 @@ class InviteGroupMemberService
         $existingGroupMember = GroupMember::where('group_id', $invitedMember->group_id)
             ->where('user_id', $user->id)
             ->first();
-        if (empty($invitedMember)) {
+        if (empty($user)) {
             $errors['errors'] = [
                 'message' => "User not Found",
                 'code' => 400
