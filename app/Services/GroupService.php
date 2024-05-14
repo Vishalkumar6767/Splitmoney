@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
 use App\Models\Group;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +54,7 @@ class GroupService
 
     public function delete($id)
     {
-        $group = $this->resource($id);
+        $group = $this->resource($id)->expense();
         $group->delete();
         $success['message'] = "Group deleted successfully";
         return $success;

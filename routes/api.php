@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
+use App\Http\Controllers\GroupStatisticsController;
 use App\Http\Controllers\UserController;
 
 //User Routes
@@ -26,4 +27,6 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('group-members', GroupMemberController::class);
     //Expense routes and User Expense.
     Route::resource('expenses',ExpenseController::class);
+    //group-statistics route
+    Route::resource('group-statistics',GroupStatisticsController::class);
 });

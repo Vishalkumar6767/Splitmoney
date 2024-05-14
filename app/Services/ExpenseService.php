@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseService
@@ -50,7 +51,7 @@ class ExpenseService
     public function update($id, $inputs)
     {
         DB::beginTransaction();
-        $expense = $this->expenseObject->findOrFail($id);
+        $expense = $this->resource($id);
         $expense->update([
             'group_id' => $inputs['group_id'],
             'payer_user_id' => $inputs['payer_user_id'],
@@ -98,5 +99,22 @@ class ExpenseService
                 }
             }
         }
+    }
+
+    public function storeGroupStatistics($groupId){
+         $total = Expense::where('group_id',$groupId)->select('amount')->sum('amount');
+        dd($total);
+
+
+    }
+    public function resourceGroupStatistics($groupId){
+        $expenseDetails = Expense::where('group_id',$groupId)->with("user")->get();
+        $total = $expenseDetails->select('amount')->sum('amount');
+       
+        return [
+            'user'=> $expenseDetails,
+            'total'=>$total
+        ];
+
     }
 }
