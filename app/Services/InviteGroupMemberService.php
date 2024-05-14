@@ -35,11 +35,11 @@ class InviteGroupMemberService
     public function storeMember($inputs)
     {
         $invitedMember = InviteGroupMember::where('token', $inputs['token'])->first();
-        $user = User::where('email', $invitedMember->email)->firstOrFail();
+        $user = User::where('email', $invitedMember->email)->first();
         $existingGroupMember = GroupMember::where('group_id', $invitedMember->group_id)
             ->where('user_id', $user->id)
             ->first();
-        if (empty($invitedMember)) {
+        if (empty($user)) {
             $errors['errors'] = [
                 'message' => "User not Found",
                 'code' => 400
