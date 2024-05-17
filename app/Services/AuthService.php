@@ -79,6 +79,19 @@ class AuthService
         $data['otp'] = $otp;
         return $data;
     }
+    public function resendOtp($inputs){
+        $otp = mt_rand(100000, 999999);
+         $userOtp = UserOtp::where('phone_no',$inputs['phone_no'])
+         ->where('type', $inputs['type'])->first();
+         UserOtp::create([
+            'phone_no' => $userOtp['phone_no'],
+            'otp' => $otp,
+            'type' => $userOtp['type'],
+        ]);
+        $data['message'] = "Otp Resend successfully.";
+        $data['otp'] = $otp;
+        return $data;
+    }
 
     public function login($inputs)
     {

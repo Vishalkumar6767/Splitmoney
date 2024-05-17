@@ -14,6 +14,7 @@ Route::resource('/users', UserController::class)->except(['create', 'edit']);
 //Auth Routes
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::get('/send-otp', [AuthController::class, 'sendOtp']);
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
