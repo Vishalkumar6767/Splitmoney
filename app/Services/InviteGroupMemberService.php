@@ -54,7 +54,7 @@ class InviteGroupMemberService
                 'group_id' => $invitedMember['group_id'],
                 'user_id' => $user['id']
             ]);
-                $success['message'] = " Welcome .$user->name. in my group";
+            $success['message'] = " Welcome .$user->name. in my group";
             return $success;
         }
     }

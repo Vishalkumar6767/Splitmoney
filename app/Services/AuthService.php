@@ -83,6 +83,13 @@ class AuthService
         $otp = mt_rand(100000, 999999);
          $userOtp = UserOtp::where('phone_no',$inputs['phone_no'])
          ->where('type', $inputs['type'])->first();
+         if (empty($userOtp)) {
+            $errors['errors'] = [
+                'message' => "Not a Valid Number",
+                'code' => 400
+            ];
+            return $errors;
+        }
          UserOtp::create([
             'phone_no' => $userOtp['phone_no'],
             'otp' => $otp,
