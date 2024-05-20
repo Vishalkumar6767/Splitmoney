@@ -35,24 +35,24 @@ class InviteGroupMemberService
     public function storeMember($inputs)
     {
         $invitedMember = InviteGroupMember::where('token', $inputs['token'])->first();
-        $user = User::where('email', $invitedMember->email)->firstOrFail();
-        $existingGroupMember = GroupMember::where('group_id', $invitedMember->group_id)
-            ->where('user_id', $user->id)
-            ->first();
-        if (empty($invitedMember)) {
+        $user = User::where('email', $invitedMember['email'])->first();
+        if (empty($user)) {
             $errors['errors'] = [
                 'message' => "User not Found",
                 'code' => 400
             ];
             return $errors;
         }
+        $existingGroupMember = GroupMember::where('group_id', $invitedMember['group_id'])
+            ->where('user_id', $user['id'])
+            ->first();
         if ($existingGroupMember) {
             $message['Message'] = "User already exist in Your Group";
             return $message;
         } else {
             GroupMember::create([
-                'group_id' => $invitedMember->group_id,
-                'user_id' => $user->id
+                'group_id' => $invitedMember['group_id'],
+                'user_id' => $user['id']
             ]);
             $success['message'] = " Welcome .$user->name. in my group";
             return $success;
