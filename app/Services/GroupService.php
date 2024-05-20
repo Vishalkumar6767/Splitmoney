@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Group;
+use App\Models\GroupMember;
 use Illuminate\Support\Facades\DB;
 
 class GroupService
@@ -42,7 +43,7 @@ class GroupService
         $group = Group::with('members')->findOrFail($id);
         return $group;
     }
-    
+
     public function update($id, $inputs)
     {
         $group = $this->resource($id);
@@ -54,6 +55,8 @@ class GroupService
     public function delete($id)
     {
         $group = $this->resource($id);
+        $groupMember = GroupMember::where('group_id', $id);
+        $groupMember->delete();
         $group->delete();
         $success['message'] = "Group deleted successfully";
         return $success;
