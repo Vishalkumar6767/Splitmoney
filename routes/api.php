@@ -10,7 +10,7 @@ use App\Http\Controllers\InviteGroupController;
 use App\Http\Controllers\UserController;
 
 //User Routes
-Route::resource('/users', UserController::class)->except(['create', 'edit']);
+
 //Auth Routes
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::get('/send-otp', [AuthController::class, 'sendOtp']);
@@ -19,6 +19,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('/me',[AuthController::class,'show']);
+    Route::resource('/users', UserController::class)->except(['create','store', 'edit']);
     //Group Routes
     Route::resource('groups', GroupController::class);
     // Invite Group member routes

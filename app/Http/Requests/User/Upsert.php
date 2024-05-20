@@ -3,6 +3,7 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class Upsert extends FormRequest
 {
@@ -21,12 +22,19 @@ class Upsert extends FormRequest
      */
     public function rules(): array
     {
-
+        $id = auth()->id();
         return [
             'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'phone_no' => ['required', 'regex:/^\+?(\d{1,3})?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/', 'unique:user,phone_no'],
-            'password' => 'required|min:6',
+            'email' => [
+                'required',
+                Rule::unique('users')->ignore($id),
+            ],
+            'phone_no' => [
+                'required',
+                'regex:/^\+?(\d{1,3})?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/',
+                Rule::unique('users')->ignore($id),
+            ],
+            // 'password' => 'required|min:6',
         ];
     }
 }

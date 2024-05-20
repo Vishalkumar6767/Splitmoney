@@ -42,6 +42,7 @@ class UserController extends Controller
     // Implement other controller methods as needed
     public function update($id, Upsert $request)
     {
+       
         $data = $this->userService->update($id, $request->validated());
         if (isset($data['errors'])) {
             return response()->json($data['errors'], 400);

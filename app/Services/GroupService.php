@@ -26,6 +26,7 @@ class GroupService
         DB::beginTransaction();
         $group = Group::create([
             'name' => $inputs['name'],
+            'type'=>$inputs['type'],
             'description' => $inputs['description'],
             'created_by' => auth()->id(),
         ]);

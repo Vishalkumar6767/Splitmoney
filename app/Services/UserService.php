@@ -6,9 +6,10 @@ use App\Models\User;
 
 class UserService
 {
-    protected $userObject;
-    public function __construct(User $userObject){
-        $this->userObject = $userObject;
+    private $userObject;
+    public function __construct()
+    {
+        $this->userObject = new User;
     }
     public function collection()
     {
@@ -17,7 +18,7 @@ class UserService
     }
     public function store($inputs)
     {
-       $this->userObject->create([
+        $this->userObject->create([
             'name' => $inputs['name'],
             'email' => $inputs['email'],
             'phone_no' => $inputs['phone_no'],
@@ -25,22 +26,21 @@ class UserService
         $success['message'] = "Data added successfully";
         return $success;
     }
-    public function resource($id)
-    {
-        $user = $this->userObject->with('groups')->findOrFail($id);
-        return $user;
-    }
+
     public function update($id, $inputs)
+
     {
-        $data = $this->resource($id);
-        $data->update($inputs);
+        $id = auth()->id();
+        $user = $this->userObject->findOrFail($id);
+        $user->update($inputs);
         $success['message'] = "data Updated Successfully";
         return $success;
     }
     public function delete($id)
     {
-        $data = $this->resource($id);
-        $data->delete();
+        $id = auth()->id();
+        $user = $this->userObject->findOrFail($id);
+        $user->delete();
         $success['message'] = "data Updated Successfully";
         return $success;
     }

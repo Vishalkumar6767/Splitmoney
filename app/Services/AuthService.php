@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Group;
 use App\Models\User;
 use App\Models\UserOtp;
 use App\Models\InviteGroupMember;
@@ -62,6 +63,7 @@ class AuthService
                     'token' => $token,
                 ];
             }
+          
             DB::commit();
             return $data;
         }
@@ -135,6 +137,11 @@ class AuthService
         }
         return $data;
     }
+    public function authenticatedUser(){
+        $id = auth()->id();
+        $user = User::findOrFail($id);
+        return $user;
+    }
     public function logout()
     {
         $user = auth()->user();
@@ -142,4 +149,5 @@ class AuthService
         $data['message'] = 'Successfully logged out';
         return $data;
     }
+
 }
