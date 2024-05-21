@@ -59,4 +59,11 @@ class AuthController extends Controller
         }
         return response()->json($resendOtp,200);   
     }
+    public function show(){
+        $user = $this->authService->authenticatedUser();
+        if(isset($user['errors'])){
+            return response()->json($user['errors'],400);
+        }
+        return response()->json($user,200);
+    }
 }

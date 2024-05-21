@@ -26,7 +26,7 @@ class Upsert extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'type' => 'required|in:none_group_expenses,group_expenses',
         ];
     }
-  
 }
