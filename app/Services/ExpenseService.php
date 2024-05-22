@@ -27,14 +27,16 @@ class ExpenseService
 
     public function store($inputs)
     {
+        
         DB::beginTransaction();
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => $inputs['payer_user_id'],
+            'payer_user_id' => auth()->id(),
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],
-            'date' => $inputs['date']
+            'date' => $inputs['date'],
+            // now()->format('Y-m-d'),   
         ]);
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
@@ -53,7 +55,7 @@ class ExpenseService
         $expense = $this->expenseObject->findOrFail($id);
         $expense->update([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => $inputs['payer_user_id'],
+            'payer_user_id' => auth()->id(),
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],

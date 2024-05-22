@@ -19,6 +19,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::middleware('auth:api')->group(function () {
+    Route::post('/upload',[UserController::class, 'upload']);
     Route::get('/me', [AuthController::class, 'show']);
     //show users list and update user
     Route::resource('/users', UserController::class)->except(['create', 'store', 'edit', 'destroy']);
