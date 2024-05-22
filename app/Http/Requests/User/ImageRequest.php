@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Group;
+namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Group;
-use Illuminate\Validation\Rule;
 
-class InviteMembers extends FormRequest
+class ImageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,15 +19,10 @@ class InviteMembers extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-
     public function rules(): array
-
-    { 
+    {
         return [
-            'group_id'=>'required|exists:groups,id',
-            'email'=>['required',
-            'email',
-            Rule::unique('invite_group_members')->where('group_id',$this->group_id)],
+           'image'=>'required|mimes:png,jpg,jpeg,gif',
         ];
     }
 }

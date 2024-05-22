@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Image;
 use App\Models\User;
 
 class UserService
@@ -11,11 +12,20 @@ class UserService
     {
         $this->userObject = new User;
     }
-    public function collection()
+    public function collection($inputs)
     {
-        $users = $this->userObject->all();
-        return $users;
-    }
+        $user = $this->userObject;
+        if (isset($inputs['search'])) {
+            $searchQuery = $inputs['search'];
+            $user = $user->where(function ($query) use($searchQuery) {
+                $query->where('name', 'LIKE','%'.$searchQuery.'%')
+                      ->orWhere('email', 'LIKE', '%'.$searchQuery.'%');
+            });
+            return $user->get();  
+        }
+         return $user->all();
+        }
+       
     public function store($inputs)
     {
         $this->userObject->create([
@@ -43,5 +53,22 @@ class UserService
         $user->delete();
         $success['message'] = "data Updated Successfully";
         return $success;
+    }
+    public function upload($inputs)
+    {
+        $img = $inputs['image'];
+        $ext = $img->getClientOriginalExtension();
+        $imageName = time() . '.' . $ext;
+        $img->move(storage_path('app/public/assets'), $imageName);
+        $image = Image::create([
+            'image' => $imageName,
+        ]);
+        $data = [
+            'status' => true,
+            'message' => "Image uploaded Successfully",
+            'path' => asset('storage/assets/' . $imageName),
+            'data' => $image
+        ];
+        return $data;
     }
 }

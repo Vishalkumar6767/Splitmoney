@@ -56,6 +56,13 @@ class GroupService
     public function delete($id)
     {
         $group = $this->resource($id);
+        if($group->type == "none_group_expenses"){
+            $error['errors'] =[
+                'message' =>"This is None expense group ",
+                'code' => 400
+            ];
+            return $error;
+        }
         $groupMember = GroupMember::where('group_id', $id);
         $groupMember->delete();
         $group->delete();
