@@ -24,7 +24,6 @@ class UpsertRequest extends FormRequest
 
         return [
             'group_id' => 'required|exists:groups,id',
-            'payer_user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric',
             'type' => 'required|string|in:EQUALLY,UNEQUALLY',
             'description' => 'nullable',
