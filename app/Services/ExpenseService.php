@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\ExpenseParticipation;
+use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -31,7 +33,7 @@ class ExpenseService
         DB::beginTransaction();
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => $inputs['payer_user_id'],
+            'payer_user_id' => auth()->id(),
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],
@@ -54,7 +56,7 @@ class ExpenseService
         $expense = $this->resource($id);
         $expense->update([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => $inputs['payer_user_id'],
+            'payer_user_id' => auth()->id(),
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],
@@ -101,20 +103,74 @@ class ExpenseService
         }
     }
 
-    public function storeGroupStatistics($groupId){
-         $total = Expense::where('group_id',$groupId)->select('amount')->sum('amount');
-        dd($total);
-
-
-    }
     public function resourceGroupStatistics($groupId){
-        $expenseDetails = Expense::where('group_id',$groupId)->with("user")->get();
-        $total = $expenseDetails->select('amount')->sum('amount');
+        $userId = auth()->id();
+        $userDetails = Group::where('id',$groupId)->with(['members','expense'])->get();
+        $totalsDebitAmount = Expense::where('payer_user_id',$userId)->with("userExpenses")->select('amount')->sum('amount');
+        $expenseIds = Expense::select('id')->where('payer_user_id', $userId)->pluck('id');
+        foreach ($expenseIds as $expenseId) {
+            $totalOwnedAmount = ExpenseParticipation::where('user_id', $userId)
+                                           ->where('expense_id', $expenseId)
+                                           ->sum('owned_amount');
+    
+        }
+        
+        $groupStatistics = [];
+        foreach($userDetails as$userDetail){
+
+            if($totalsDebitAmount > $totalOwnedAmount){
+                $remainingAmountToGet = $totalsDebitAmount - $totalOwnedAmount;
+                $groupStatistics[] =[
+                    'data'=>[
+                        'user'=>$userDetail->members,
+                        'expense'=>[
+                            'total'=>$totalsDebitAmount,
+                            'type'=>"DEBT",
+                        ],
+                        'obtained'=>[
+                            'total'=> $totalOwnedAmount,
+                            'type'=> "CREDIT"
+                        ],
+                        'toGet'=>$remainingAmountToGet
+                    ]
+                        ];
+              }else{
+                $remainingAmountToPay = $totalOwnedAmount-$totalsDebitAmount;
+                $groupStatistics[] =[
+                    'data'=>[
+                        'user'=>$userDetail->members,
+                        'expense'=>[
+                            'total'=>$totalsDebitAmount,
+                            'type'=>"DEBT",
+                        ],
+                        'obtained'=>[
+                            'total'=> $totalOwnedAmount,
+                            'type'=> "CREDIT"
+                        ],
+                        'toPay'=>$remainingAmountToPay,
+                        
+                    ]
+                        ];
+              }
+
+            // $groupStatistics[] =[
+            //     'data'=>[
+            //         'user'=>$userDetail->members,
+            //         'expense'=>[
+            //             'total'=>$totalsDebitAmount,
+            //             'type'=>"DEBT",
+            //         ],
+            //         'obtained'=>[
+            //             'total'=> $totalOwnedAmount,
+            //             'type'=> "CREDIT"
+            //         ],
+            //         'toPay'=>$remainingAmountToPay,
+            //         'toGet'=>$remainingAmountToGet
+            //     ]
+            //         ];
+        }
+        return $groupStatistics;
        
-        return [
-            'user'=> $expenseDetails,
-            'total'=>$total
-        ];
 
     }
 }
