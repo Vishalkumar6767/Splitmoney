@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\ImageRequest;
 use App\Http\Requests\User\Upsert;
 use App\Models\User;
 use App\Services\UserService; // Import the UserService class
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -17,10 +19,10 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Call the getAllUsers method of the userService
-        $users = $this->userService->collection();
+        $users = $this->userService->collection($request->all());
         if (isset($users['errors'])) {
             return response()->json($users["errors"], 400);
         }
@@ -42,6 +44,7 @@ class UserController extends Controller
     // Implement other controller methods as needed
     public function update($id, Upsert $request)
     {
+       
         $data = $this->userService->update($id, $request->validated());
         if (isset($data['errors'])) {
             return response()->json($data['errors'], 400);
@@ -58,5 +61,14 @@ class UserController extends Controller
         }
         $message = 'User deleted successfully';
         return response()->json(['message' => $message], 200);
+    }
+
+    public function upload(ImageRequest $request){
+        $image = $this->userService->upload($request->validated());
+        if(isset($image['errors'])){
+            return response()->json($image['errors'],400);
+        }
+        return response()->json($image,200);
+
     }
 }

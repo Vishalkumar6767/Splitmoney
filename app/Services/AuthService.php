@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Group;
 use App\Models\User;
 use App\Models\UserOtp;
 use App\Models\InviteGroupMember;
@@ -35,6 +36,13 @@ class AuthService
             DB::beginTransaction();
             $user = User::create($inputs->validated());
             $token = $user->createToken(config('app.name'))->accessToken;
+            $group = Group::create([
+                'name' => "none-group expense",
+                'type' => "none_group_expenses",
+                'description' => "own group",
+                'created_by' => $user->id,
+            ]);
+            $group->members()->sync([$user->id]);
             if ($inputs->has('token')) {
                 try {
                     $inviteMember = InviteGroupMember::where('token', $inputs->token)
@@ -62,6 +70,7 @@ class AuthService
                     'token' => $token,
                 ];
             }
+
             DB::commit();
             return $data;
         }
@@ -76,6 +85,27 @@ class AuthService
             'type' => $inputs['type'],
         ]);
         $data['message'] = "Otp send successfully.";
+        $data['otp'] = $otp;
+        return $data;
+    }
+    public function resendOtp($inputs)
+    {
+        $otp = mt_rand(100000, 999999);
+        $userOtp = UserOtp::where('phone_no', $inputs['phone_no'])
+            ->where('type', $inputs['type'])->first();
+        if (empty($userOtp)) {
+            $errors['errors'] = [
+                'message' => "Not a Valid Number",
+                'code' => 400
+            ];
+            return $errors;
+        }
+        UserOtp::create([
+            'phone_no' => $userOtp['phone_no'],
+            'otp' => $otp,
+            'type' => $userOtp['type'],
+        ]);
+        $data['message'] = "Otp Resend successfully.";
         $data['otp'] = $otp;
         return $data;
     }
@@ -114,6 +144,12 @@ class AuthService
             ];
         }
         return $data;
+    }
+    public function authenticatedUser()
+    {
+        $id = auth()->id();
+        $user = User::findOrFail($id);
+        return $user;
     }
     public function logout()
     {

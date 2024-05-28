@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Expense;
 use App\Models\Group;
+use App\Models\GroupMember;
 use Illuminate\Support\Facades\DB;
 
 class GroupService
@@ -26,6 +27,7 @@ class GroupService
         DB::beginTransaction();
         $group = Group::create([
             'name' => $inputs['name'],
+            'type'=>$inputs['type'],
             'description' => $inputs['description'],
             'created_by' => auth()->id(),
         ]);
@@ -43,7 +45,7 @@ class GroupService
         $group = Group::with('members')->findOrFail($id);
         return $group;
     }
-    
+
     public function update($id, $inputs)
     {
         $group = $this->resource($id);
@@ -54,7 +56,16 @@ class GroupService
 
     public function delete($id)
     {
-        $group = $this->resource($id)->expense();
+        $group = $this->resource($id);
+        if($group->type == "none_group_expenses"){
+            $error['errors'] =[
+                'message' =>"This is None expense group ",
+                'code' => 400
+            ];
+            return $error;
+        }
+        $groupMember = GroupMember::where('group_id', $id);
+        $groupMember->delete();
         $group->delete();
         $success['message'] = "Group deleted successfully";
         return $success;
