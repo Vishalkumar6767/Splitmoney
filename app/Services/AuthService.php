@@ -115,7 +115,7 @@ class AuthService
         $user = User::where('phone_no', $inputs['phone_no'])->first();
         if (!$user) {
             $errors['errors'] = [
-                'message' => "Invalid User",
+                'message' => "User does not exist",
                 'code' => 400
             ];
             return $errors;

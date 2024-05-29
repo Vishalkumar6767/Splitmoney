@@ -17,9 +17,9 @@ class GroupMemberService
             for getting the group members and  owner details type owner and members in params*/
         }
 
-        $data = Group::with($includes);
-        $data = $data->get();
-        return $data;
+        $groups = Group::with($includes);
+        $groups = $groups->get();
+        return $groups;
     }
 
     public function store($inputs)

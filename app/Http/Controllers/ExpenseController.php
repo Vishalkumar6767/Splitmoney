@@ -42,9 +42,9 @@ class ExpenseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int $id)
+    public function show(int $id,Request $request)
     {
-        $data = $this->expenseService->resource($id);
+        $data = $this->expenseService->resource($id,$request->all());
         if (isset($data['errors'])) {
             return response()->json($data['errors'], 400);
         }

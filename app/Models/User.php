@@ -57,6 +57,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Expense::class);
     }
+    public function expenseParticipation()
+    {
+        return $this->hasMany(ExpenseParticipation::class);
+    }
     public function setEmailAttribute($email)
     {
         $this->attributes['email'] = strtolower($email);
@@ -64,7 +68,8 @@ class User extends Authenticatable
     protected function Name(): Attribute
     {
         return Attribute::make(
-            set: fn ($name) => ucwords($name),
+            set: fn ($name) => strtolower($name),
+            get: fn ($name)=>ucwords($name),
         );
     }
 }

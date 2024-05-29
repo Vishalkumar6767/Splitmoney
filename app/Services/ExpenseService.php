@@ -22,14 +22,13 @@ class ExpenseService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $expenses = $this->expenseObject->with($includes, ['userExpenses'])
+        $expenses = $this->expenseObject->with($includes)
             ->where('group_id', $inputs['group_id'])->get();
         return $expenses;
     }
 
     public function store($inputs)
     {
-
         DB::beginTransaction();
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
@@ -53,15 +52,23 @@ class ExpenseService
         return $success;
     }
 
-    public function resource($id)
+    public function resource($id,$inputs)
     {
-        return $this->expenseObject->findOrFail($id);
+
+        $includes = [];
+      
+        if (!empty($inputs['includes'])) {
+            $includes = explode(",", $inputs['includes']);
+        }
+        $expense = $this->expenseObject->with($includes)->findOrFail($id);
+
+        return $expense;
     }
 
     public function update($id, $inputs)
     {
         DB::beginTransaction();
-        $expense = $this->resource($id);
+        $expense = $this->expenseObject->findOrFail($id);
         $expense->update([
             'group_id' => $inputs['group_id'],
             'payer_user_id' => auth()->id(),
@@ -79,7 +86,7 @@ class ExpenseService
 
     public function delete($id)
     {
-        $expense = $this->resource($id);
+        $expense = $this->expenseObject->findOrFail($id);
         $expense->userExpenses()->delete();
         $expense->delete();
         $success['message'] = "Expense deleted successfully";
@@ -140,9 +147,10 @@ class ExpenseService
                         'total' => $totalExpenses,
                         'type' => "DEBT",
                     ],
-                    'owes_you' => '+' . $remainingAmountToGet
+                    'you_lent' =>$remainingAmountToGet
                 ];
-            } else {
+            } 
+            if($totalDebitAmount < $totalOwnedAmount) {
                 $remainingAmountToPay = $totalOwnedAmount - $totalDebitAmount;
                 $groupStatistics[] = [
                     'user' => $member,
@@ -150,7 +158,7 @@ class ExpenseService
                         'total' => $totalExpenses,
                         'type' => "CREDIT",
                     ],
-                    'you_owe' => '-' . $remainingAmountToPay,
+                    'borrow' =>$remainingAmountToPay,
                 ];
             }
         }
