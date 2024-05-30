@@ -23,7 +23,8 @@ class UserService
             });
             return $user->get();  
         }
-         return $user->all();
+         return $user->cursorPaginate(5);
+        
         }
        
     public function store($inputs)

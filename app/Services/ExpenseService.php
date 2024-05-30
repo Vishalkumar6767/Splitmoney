@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use App\Models\ExpenseParticipation;
+use App\Models\Group;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseService
@@ -20,14 +22,13 @@ class ExpenseService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $expenses = $this->expenseObject->with($includes, ['userExpenses'])
+        $expenses = $this->expenseObject->with($includes)
             ->where('group_id', $inputs['group_id'])->get();
         return $expenses;
     }
 
     public function store($inputs)
     {
-        
         DB::beginTransaction();
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
@@ -36,17 +37,32 @@ class ExpenseService
             'type' => $inputs['type'],
             'description' => $inputs['description'],
             'date' => $inputs['date'],
-            // now()->format('Y-m-d'),   
         ]);
+        $totalSharedAmount = array_sum((array_column($inputs['user_expenses'], 'owned_amount')));
+        if ($inputs['type'] === "UNEQUALLY" &&  $expense->amount !== $totalSharedAmount) {
+            $error['errors'] = [
+                'message' => "Kindly check shared amount.",
+                'code' => 400
+            ];
+            return $error;
+        }
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
         $success['message'] = "Data added successfully";
         return $success;
     }
 
-    public function resource($id)
+    public function resource($id,$inputs)
     {
-        return $this->expenseObject->findOrFail($id);
+
+        $includes = [];
+      
+        if (!empty($inputs['includes'])) {
+            $includes = explode(",", $inputs['includes']);
+        }
+        $expense = $this->expenseObject->with($includes)->findOrFail($id);
+
+        return $expense;
     }
 
     public function update($id, $inputs)
@@ -61,6 +77,7 @@ class ExpenseService
             'description' => $inputs['description'],
             'date' => $inputs['date']
         ]);
+
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
         $success['message'] = "Data updated successfully";
@@ -69,7 +86,7 @@ class ExpenseService
 
     public function delete($id)
     {
-        $expense = $this->resource($id);
+        $expense = $this->expenseObject->findOrFail($id);
         $expense->userExpenses()->delete();
         $expense->delete();
         $success['message'] = "Expense deleted successfully";
@@ -90,7 +107,16 @@ class ExpenseService
                     ]);
                 }
             }
+
             if ($inputs['type'] === "UNEQUALLY") {
+                $totalSharedAmount = array_sum((array_column($inputs['user_expenses'], 'owned_amount')));
+                if ($expense->amount !== $totalSharedAmount) {
+                    $error['errors'] = [
+                        'message' => "Kindly check shared amount.",
+                        'code' => 400
+                    ];
+                    return $error;
+                }
                 foreach ($inputs['user_expenses'] as $userExpense) {
                     $expense->userExpenses()->create([
                         'user_id' => $userExpense['user_id'],
@@ -100,5 +126,43 @@ class ExpenseService
                 }
             }
         }
+    }
+
+    public function resourceGroupStatistics($groupId)
+    {
+        $userId = auth()->id();
+        $groupDetails = Group::with(['members', 'expense'])->find($groupId);
+        $totalExpenses = $groupDetails->expense()->sum('amount');
+        $totalDebitAmount = Expense::where('payer_user_id', $userId)->sum('amount');
+        $groupStatistics = [];
+        foreach ($groupDetails->members as $member) {
+            $totalOwnedAmount = ExpenseParticipation::where('user_id', $member->id)
+                ->whereIn('expense_id', $groupDetails->expense->pluck('id'))
+                ->sum('owned_amount');
+            if ($totalDebitAmount > $totalOwnedAmount) {
+                $remainingAmountToGet = $totalDebitAmount - $totalOwnedAmount;
+                $groupStatistics[] = [
+                    'user' => $member,
+                    'expense' => [
+                        'total' => $totalExpenses,
+                        'type' => "DEBT",
+                    ],
+                    'you_lent' =>$remainingAmountToGet
+                ];
+            } 
+            if($totalDebitAmount < $totalOwnedAmount) {
+                $remainingAmountToPay = $totalOwnedAmount - $totalDebitAmount;
+                $groupStatistics[] = [
+                    'user' => $member,
+                    'expense' => [
+                        'total' => $totalExpenses,
+                        'type' => "CREDIT",
+                    ],
+                    'borrow' =>$remainingAmountToPay,
+                ];
+            }
+        }
+
+        return $groupStatistics;
     }
 }

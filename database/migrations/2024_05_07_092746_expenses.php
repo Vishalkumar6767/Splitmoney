@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('payer_user_id')->references('id')->on('users');
             $table->float('amount');
             $table->string('description')->nullable();
-            $table->date('date')->default('Y-m-d');
+            $table->date('date');
             $table->timestamps();
         });
     }
