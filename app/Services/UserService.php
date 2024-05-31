@@ -11,7 +11,7 @@ class UserService
     {
         $this->userObject = new User;
     }
-    public function collection($inputs,)
+    public function collection($inputs)
     {
         $user = $this->userObject;
         if (isset($inputs['search'])) {
