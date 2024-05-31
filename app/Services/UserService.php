@@ -11,7 +11,7 @@ class UserService
     {
         $this->userObject = new User;
     }
-    public function collection($inputs, $limit = 5)
+    public function collection($inputs)
     {
         $user = $this->userObject;
         if (isset($inputs['search'])) {
@@ -21,7 +21,11 @@ class UserService
                     ->orWhere('email', 'LIKE', '%' . $searchQuery . '%');
             });
 
-            return $user->get();
+            return $user->orderby('id')->paginate((isset($inputs['limit'])) ? $inputs['limit'] : 5,
+            ['*'],
+            'page',
+            $inputs['page']
+        );
         }
         return $user->orderby('id')->paginate((isset($inputs['limit'])) ? $inputs['limit'] : 5,
             ['*'],
