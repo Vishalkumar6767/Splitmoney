@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\User;
-
 class UserService
 {
     private $userObject;
@@ -12,21 +11,25 @@ class UserService
     {
         $this->userObject = new User;
     }
-    public function collection($inputs)
+    public function collection($inputs, $limit = 5)
     {
         $user = $this->userObject;
         if (isset($inputs['search'])) {
             $searchQuery = $inputs['search'];
-            $user = $user->where(function ($query) use($searchQuery) {
-                $query->where('name', 'LIKE','%'.$searchQuery.'%')
-                      ->orWhere('email', 'LIKE', '%'.$searchQuery.'%');
+            $user = $user->where(function ($query) use ($searchQuery) {
+                $query->where('name', 'LIKE', '%' . $searchQuery . '%')
+                    ->orWhere('email', 'LIKE', '%' . $searchQuery . '%');
             });
-            return $user->get();  
+
+            return $user->get();
         }
-         return $user->cursorPaginate(5);
-        
-        }
-       
+        return $user->orderby('id')->paginate((isset($inputs['limit'])) ? $inputs['limit'] : 5,
+            ['*'],
+            'page',
+            $inputs['page']
+        );
+    }
+
     public function store($inputs)
     {
         $this->userObject->create([
