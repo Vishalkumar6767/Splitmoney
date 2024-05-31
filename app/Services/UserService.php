@@ -11,7 +11,7 @@ class UserService
     {
         $this->userObject = new User;
     }
-    public function collection($inputs)
+    public function collection($inputs,)
     {
         $user = $this->userObject;
         if (isset($inputs['search'])) {
@@ -20,18 +20,12 @@ class UserService
                 $query->where('name', 'LIKE', '%' . $searchQuery . '%')
                     ->orWhere('email', 'LIKE', '%' . $searchQuery . '%');
             });
-
-            return $user->orderby('id')->paginate((isset($inputs['limit'])) ? $inputs['limit'] : 5,
-            ['*'],
-            'page',
-            $inputs['page']
-        );
         }
-        return $user->orderby('id')->paginate((isset($inputs['limit'])) ? $inputs['limit'] : 5,
-            ['*'],
-            'page',
-            $inputs['page']
-        );
+        $user = $user->orderby('id');
+        if(empty($inputs['limit'])){
+            return $user->get();   
+        }
+        return $user->paginate( $inputs['limit'],['*'],'page',$inputs['page']);   
     }
 
     public function store($inputs)
