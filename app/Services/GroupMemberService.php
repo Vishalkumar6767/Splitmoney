@@ -10,16 +10,15 @@ class GroupMemberService
     public function collection($inputs)
     {
         $includes = [];
-        if (!empty($inputs['includes']))
-        {
+        if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
             /* We use explode function to convert the string into an array element//
             for getting the group members and  owner details type owner and members in params*/
         }
 
-        $data = Group::with($includes);
-        $data = $data->get();
-        return $data;
+        $groups = Group::with($includes);
+        $groups = $groups->get();
+        return $groups;
     }
 
     public function store($inputs)
@@ -30,7 +29,7 @@ class GroupMemberService
                 ->where('user_id', $userId)
                 ->first();
             if ($existingGroupMember) {
-                $groupMembers[] = $existingGroupMember;    
+                $groupMembers[] = $existingGroupMember;
             } else {
                 $newGroupMember = GroupMember::create([
                     'group_id' => $inputs['group_id'],
@@ -39,7 +38,7 @@ class GroupMemberService
                 $groupMembers[] = $newGroupMember;
             }
         }
-       $success['message'] = "Members are added successfully in the group";
+        $success['message'] = "Members are added successfully in the group";
         return $success;
     }
 }

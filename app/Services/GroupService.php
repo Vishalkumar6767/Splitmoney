@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
 use App\Models\Group;
 use App\Models\GroupMember;
 use Illuminate\Support\Facades\DB;

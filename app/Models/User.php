@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -55,5 +56,20 @@ class User extends Authenticatable
     public function expense()
     {
         return $this->hasMany(Expense::class);
+    }
+    public function expenseParticipation()
+    {
+        return $this->hasMany(ExpenseParticipation::class);
+    }
+    public function setEmailAttribute($email)
+    {
+        $this->attributes['email'] = strtolower($email);
+    }
+    protected function Name(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($name) => strtolower($name),
+            get: fn ($name)=>ucwords($name),
+        );
     }
 }

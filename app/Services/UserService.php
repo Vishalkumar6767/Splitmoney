@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\User;
-
 class UserService
 {
     private $userObject;
@@ -17,15 +16,18 @@ class UserService
         $user = $this->userObject;
         if (isset($inputs['search'])) {
             $searchQuery = $inputs['search'];
-            $user = $user->where(function ($query) use($searchQuery) {
-                $query->where('name', 'LIKE','%'.$searchQuery.'%')
-                      ->orWhere('email', 'LIKE', '%'.$searchQuery.'%');
+            $user = $user->where(function ($query) use ($searchQuery) {
+                $query->where('name', 'LIKE', '%' . $searchQuery . '%')
+                    ->orWhere('email', 'LIKE', '%' . $searchQuery . '%');
             });
-            return $user->get();  
         }
-         return $user->all();
+        $user = $user->orderby('id');
+        if(empty($inputs['limit'])){
+            return $user->get();   
         }
-       
+        return $user->paginate( $inputs['limit'],['*'],'page',$inputs['page']);   
+    }
+
     public function store($inputs)
     {
         $this->userObject->create([

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Number;
 
 class Expense extends Model
 {
@@ -21,8 +22,12 @@ class Expense extends Model
     {
         return $this->belongsTo(User::class, 'payer_user_id', 'id');
     }
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id', 'id');
+    }
     public function userExpenses()
     {
-        return $this->hasMany(ExpenseParticipation::class,'expense_id','id');
+        return $this->hasMany(ExpenseParticipation::class, 'expense_id', 'id');
     }
 }
