@@ -61,6 +61,7 @@ class UserService
         $imageName = time() . '.' . $ext;
         $img->move(storage_path('app/public/assets'), $imageName);
         $image = Image::create([
+            'user_id'=>auth()->id(),
             'image' => $imageName,
         ]);
         $data = [
