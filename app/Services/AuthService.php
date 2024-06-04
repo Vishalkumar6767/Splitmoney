@@ -37,7 +37,7 @@ class AuthService
             $user = User::create($inputs->validated());
             $token = $user->createToken(config('app.name'))->accessToken;
             $group = Group::create([
-                'name' => "none-group expense",
+                'name' => "None-group expenses",
                 'type' => "none_group_expenses",
                 'description' => "own group",
                 'created_by' => $user->id,

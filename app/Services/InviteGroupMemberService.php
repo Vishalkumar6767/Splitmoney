@@ -22,7 +22,7 @@ class InviteGroupMemberService
         $group = Group::where('type', "none_group_expenses")->find($inputs['group_id']);
         if ($group) {
             $error['errors'] = [
-                'message' => "Group type is None group expense",
+                'message' => "Group type is None group expenses",
                 'code' => 400
             ];
             return $error;
@@ -34,7 +34,7 @@ class InviteGroupMemberService
             'email' => $inputs['email'],
             'token' => $token,
         ]);
-        $invitationLink = config('site.frontWebsiteUrl') . '?token=' . $token;
+        $invitationLink = config('site.frontWebsiteUrl') . '?token=' . $token . '&email=' . urlencode($inputs['email']);
         Mail::to($inputs->email)->send(new SendMail($invitationLink));
         $data['message'] = "Invitation sent successfully";
         $data['token'] = $token;

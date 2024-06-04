@@ -129,40 +129,42 @@ class ExpenseService
     }
 
     public function resourceGroupStatistics($groupId)
-    {
-        $userId = auth()->id();
-        $groupDetails = Group::with(['members', 'expense'])->find($groupId);
-        $totalExpenses = $groupDetails->expense()->sum('amount');
-        $totalDebitAmount = Expense::where('payer_user_id', $userId)->sum('amount');
-        $groupStatistics = [];
-        foreach ($groupDetails->members as $member) {
-            $totalOwnedAmount = ExpenseParticipation::where('user_id', $member->id)
-                ->whereIn('expense_id', $groupDetails->expense->pluck('id'))
-                ->sum('owned_amount');
-            if ($totalDebitAmount > $totalOwnedAmount) {
-                $remainingAmountToGet = $totalDebitAmount - $totalOwnedAmount;
-                $groupStatistics[] = [
-                    'user' => $member,
-                    'expense' => [
-                        'total' => $totalExpenses,
-                        'type' => "DEBT",
-                    ],
-                    'you_lent' =>$remainingAmountToGet
-                ];
-            } 
-            if($totalDebitAmount < $totalOwnedAmount) {
-                $remainingAmountToPay = $totalOwnedAmount - $totalDebitAmount;
-                $groupStatistics[] = [
-                    'user' => $member,
-                    'expense' => [
-                        'total' => $totalExpenses,
-                        'type' => "CREDIT",
-                    ],
-                    'borrow' =>$remainingAmountToPay,
-                ];
-            }
+{
+    $groupDetails = Group::with(['members', 'expense'])->find($groupId);
+    // $totalLent = $groupDetails->expense()->sum('amount');
+    $groupStatistics = [];
+    foreach ($groupDetails->members as $member) {
+        $lentByMember = $groupDetails->expense()
+            ->where('payer_user_id', $member->id) 
+            ->sum('amount');
+        $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
+            ->whereIn('expense_id', $groupDetails->expense->pluck('id'))
+            ->sum('owned_amount');
+        if ($lentByMember > $borrowedByMember) {
+            $remainingAmountToGet = $lentByMember - $borrowedByMember;
+            $groupStatistics[] = [
+                'user' => $member,
+                'expense' => [
+                    'total' => $remainingAmountToGet,
+                    'type' => "DEBT",
+                ],
+                // 'lent' => $remainingAmountToGet
+            ];
         }
-
-        return $groupStatistics;
+        if ($lentByMember < $borrowedByMember) {
+            $remainingAmountToPay = $borrowedByMember - $lentByMember;
+            $groupStatistics[] = [
+                'user' => $member,
+                'expense' => [
+                    'total' => $remainingAmountToPay,
+                    'type' => "CREDIT",
+                ],
+                // 'borrow' => $remainingAmountToPay,
+            ];
+        }
     }
+    
+    return $groupStatistics;
+}
+
 }
