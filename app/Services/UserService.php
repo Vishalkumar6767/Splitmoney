@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\User;
+
 class UserService
 {
     private $userObject;
@@ -22,10 +23,10 @@ class UserService
             });
         }
         $user = $user->orderby('id');
-        if(empty($inputs['limit'])){
-            return $user->get();   
+        if (empty($inputs['limit'])) {
+            return $user->get();
         }
-        return $user->paginate( $inputs['limit'],['*'],'page',$inputs['page']);   
+        return $user->paginate($inputs['limit'], ['*'], 'page', $inputs['page']);
     }
 
     public function store($inputs)
@@ -63,7 +64,7 @@ class UserService
         $imageName = time() . '.' . $ext;
         $img->move(storage_path('app/public/assets'), $imageName);
         $image = Image::create([
-            'user_id'=>auth()->id(),
+            'user_id' => auth()->id(),
             'image' => $imageName,
         ]);
         $data = [

@@ -61,6 +61,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ExpenseParticipation::class);
     }
+    public function image()
+    {
+        return $this->hasOne(Image::class);
+    }
     public function setEmailAttribute($email)
     {
         $this->attributes['email'] = strtolower($email);

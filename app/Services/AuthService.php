@@ -145,12 +145,19 @@ class AuthService
         }
         return $data;
     }
+
     public function authenticatedUser()
     {
+
         $id = auth()->id();
         $user = User::findOrFail($id);
+        $userImage = $user->image;
+        $imagePath = $userImage ? asset("storage/assets/{$userImage->image}") : null;
+        $user->image_url = $imagePath;
+        unset($user->image);
         return $user;
     }
+
     public function logout()
     {
         $user = auth()->user();
