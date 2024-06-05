@@ -8,9 +8,11 @@ use App\Models\User;
 class UserService
 {
     private $userObject;
+    private $imageObject;
     public function __construct()
     {
         $this->userObject = new User;
+        $this->imageObject = new Image;
     }
     public function collection($inputs)
     {
@@ -58,12 +60,12 @@ class UserService
         return $success;
     }
     public function upload($inputs)
-    {
+    { 
         $img = $inputs['image'];
         $ext = $img->getClientOriginalExtension();
         $imageName = time() . '.' . $ext;
         $img->move(storage_path('app/public/assets'), $imageName);
-        $image = Image::create([
+        $image = $this->imageObject->create([
             'user_id' => auth()->id(),
             'image' => $imageName,
         ]);
