@@ -4,12 +4,15 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\User;
+
 class UserService
 {
     private $userObject;
+    private $imageObject;
     public function __construct()
     {
         $this->userObject = new User;
+        $this->imageObject = new Image;
     }
     public function collection($inputs)
     {
@@ -22,10 +25,10 @@ class UserService
             });
         }
         $user = $user->orderby('id');
-        if(empty($inputs['limit'])){
-            return $user->get();   
+        if (empty($inputs['limit'])) {
+            return $user->get();
         }
-        return $user->paginate( $inputs['limit'],['*'],'page',$inputs['page']);   
+        return $user->paginate($inputs['limit'], ['*'], 'page', $inputs['page']);
     }
 
     public function store($inputs)
@@ -57,13 +60,13 @@ class UserService
         return $success;
     }
     public function upload($inputs)
-    {
+    { 
         $img = $inputs['image'];
         $ext = $img->getClientOriginalExtension();
         $imageName = time() . '.' . $ext;
         $img->move(storage_path('app/public/assets'), $imageName);
-        $image = Image::create([
-            'user_id'=>auth()->id(),
+        $image = $this->imageObject->create([
+            'user_id' => auth()->id(),
             'image' => $imageName,
         ]);
         $data = [

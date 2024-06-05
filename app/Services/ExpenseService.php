@@ -131,7 +131,6 @@ class ExpenseService
     public function resourceGroupStatistics($groupId)
 {
     $groupDetails = Group::with(['members', 'expense'])->find($groupId);
-    // $totalLent = $groupDetails->expense()->sum('amount');
     $groupStatistics = [];
     foreach ($groupDetails->members as $member) {
         $lentByMember = $groupDetails->expense()
@@ -148,7 +147,6 @@ class ExpenseService
                     'total' => $remainingAmountToGet,
                     'type' => "DEBT",
                 ],
-                // 'lent' => $remainingAmountToGet
             ];
         }
         if ($lentByMember < $borrowedByMember) {
@@ -159,11 +157,9 @@ class ExpenseService
                     'total' => $remainingAmountToPay,
                     'type' => "CREDIT",
                 ],
-                // 'borrow' => $remainingAmountToPay,
             ];
         }
     }
-    
     return $groupStatistics;
 }
 

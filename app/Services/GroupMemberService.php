@@ -7,6 +7,14 @@ use App\Models\Group;
 
 class GroupMemberService
 {
+    private $groupObject;
+    private $groupMemberObject;
+
+    public function __construct()
+    {
+        $this->groupMemberObject = new GroupMember;
+        $this->groupObject = new Group; 
+    }
     public function collection($inputs)
     {
         $includes = [];
@@ -16,7 +24,7 @@ class GroupMemberService
             for getting the group members and  owner details type owner and members in params*/
         }
 
-        $groups = Group::with($includes);
+        $groups = $this->groupObject->with($includes);
         $groups = $groups->get();
         return $groups;
     }
@@ -25,13 +33,13 @@ class GroupMemberService
     {
         $groupMembers = [];
         foreach ($inputs['user_id'] as $userId) {
-            $existingGroupMember = GroupMember::where('group_id', $inputs['group_id'])
+            $existingGroupMember = $this->groupMemberObject->where('group_id', $inputs['group_id'])
                 ->where('user_id', $userId)
                 ->first();
             if ($existingGroupMember) {
                 $groupMembers[] = $existingGroupMember;
             } else {
-                $newGroupMember = GroupMember::create([
+                $newGroupMember = $this->groupMemberObject->create([
                     'group_id' => $inputs['group_id'],
                     'user_id' => $userId,
                 ]);

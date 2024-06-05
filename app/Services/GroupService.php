@@ -8,13 +8,21 @@ use Illuminate\Support\Facades\DB;
 
 class GroupService
 {
+    private $groupObject;
+    private $groupMemberObject;
+
+    public function __construct()
+    {
+        $this->groupMemberObject = new GroupMember;
+        $this->groupObject = new Group; 
+    }
     public function collection($inputs)
     {
         $includes = [];
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-        $groups = Group::with($includes)->whereHas('members', function ($query) {
+        $groups = $this->groupObject->with($includes)->whereHas('members', function ($query) {
             $query->where('user_id', auth()->id());
         });
 
@@ -24,7 +32,7 @@ class GroupService
     public function store($inputs)
     {
         DB::beginTransaction();
-        $group = Group::create([
+        $group = $this->groupObject->create([
             'name' => $inputs['name'],
             'type'=>$inputs['type'],
             'description' => $inputs['description'],
@@ -41,7 +49,7 @@ class GroupService
     public function resource($id)
     {
 
-        $group = Group::with('members')->findOrFail($id);
+        $group = $this->groupObject->with('members')->findOrFail($id);
         return $group;
     }
 
@@ -63,7 +71,7 @@ class GroupService
             ];
             return $error;
         }
-        $groupMember = GroupMember::where('group_id', $id);
+        $groupMember = $this->groupMemberObject->where('group_id', $id);
         $groupMember->delete();
         $group->delete();
         $success['message'] = "Group deleted successfully";

@@ -12,14 +12,25 @@ use Illuminate\Support\Facades\Mail;
 
 class InviteGroupMemberService
 {
+    private $userObject;
+    private $groupObject;
+    private $groupMemberObject;
+    private $inviteGroupMemberObject;
+    public function __construct()
+    {
+        $this->userObject = new User;
+        $this->groupMemberObject = new GroupMember;
+        $this->groupObject = new Group;
+       $this->inviteGroupMemberObject = new InviteGroupMember;
+    }
 
     public function collection()
     {
-        return InviteGroupMember::all();
+        return $this->inviteGroupMemberObject->all();
     }
     public function store($inputs)
     {
-        $group = Group::where('type', "none_group_expenses")->find($inputs['group_id']);
+        $group = $this->groupObject->where('type', "none_group_expenses")->find($inputs['group_id']);
         if ($group) {
             $error['errors'] = [
                 'message' => "Group type is None group expenses",
@@ -28,7 +39,7 @@ class InviteGroupMemberService
             return $error;
         }
         $token = Str::uuid();
-        InviteGroupMember::create([
+        $this->inviteGroupMemberObject->create([
             'user_id' => auth()->id(),
             'group_id' => $inputs['group_id'],
             'email' => $inputs['email'],
@@ -42,8 +53,8 @@ class InviteGroupMemberService
     }
     public function storeMember($inputs)
     {
-        $invitedMember = InviteGroupMember::where('token', $inputs['token'])->first();
-        $user = User::where('email', $invitedMember['email'])->first();
+        $invitedMember = $this->inviteGroupMemberObject->where('token', $inputs['token'])->first();
+        $user = $this->userObject->where('email', $invitedMember['email'])->first();
         if (empty($user)) {
             $errors['errors'] = [
                 'message' => "User not Found",
@@ -51,14 +62,14 @@ class InviteGroupMemberService
             ];
             return $errors;
         }
-        $existingGroupMember = GroupMember::where('group_id', $invitedMember['group_id'])
+        $existingGroupMember =  $this->groupMemberObject->where('group_id', $invitedMember['group_id'])
             ->where('user_id', $user['id'])
             ->first();
         if ($existingGroupMember) {
             $message['Message'] = "User already exist in Your Group";
             return $message;
         } else {
-            GroupMember::create([
+            $this->groupMemberObject->create([
                 'group_id' => $invitedMember['group_id'],
                 'user_id' => $user['id']
             ]);

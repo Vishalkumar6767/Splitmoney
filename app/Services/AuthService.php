@@ -12,13 +12,19 @@ use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
-    public function getAllUsers()
+    private $userObject;
+    private $otpObject;
+
+    public function __construct()
     {
-        return User::all();
+        $this->userObject = new User;
+        $this->otpObject = new UserOtp;
+
     }
+
     public function signup($inputs)
     {
-        $userOtp = UserOtp::whereOtp($inputs['otp'])
+        $userOtp = $this->otpObject->whereOtp($inputs['otp'])
             ->where('phone_no', $inputs['phone_no'])
             ->where('type', 'verification')
             ->whereNull('verified_at')
@@ -34,7 +40,7 @@ class AuthService
         $data = [];
         if ($userOtp->otp == $inputs->otp) {
             DB::beginTransaction();
-            $user = User::create($inputs->validated());
+            $user = $this->userObject->create($inputs->validated());
             $token = $user->createToken(config('app.name'))->accessToken;
             $group = Group::create([
                 'name' => "None-group expenses",
@@ -42,6 +48,7 @@ class AuthService
                 'description' => "own group",
                 'created_by' => $user->id,
             ]);
+            $userOtp->delete();
             $group->members()->sync([$user->id]);
             if ($inputs->has('token')) {
                 try {
@@ -79,7 +86,7 @@ class AuthService
     public function sendOtp($inputs)
     {
         $otp = mt_rand(100000, 999999);
-        UserOtp::create([
+        $this->otpObject->create([
             'phone_no' => $inputs['phone_no'],
             'otp' => $otp,
             'type' => $inputs['type'],
@@ -91,7 +98,7 @@ class AuthService
     public function resendOtp($inputs)
     {
         $otp = mt_rand(100000, 999999);
-        $userOtp = UserOtp::where('phone_no', $inputs['phone_no'])
+        $userOtp = $this->otpObject->where('phone_no', $inputs['phone_no'])
             ->where('type', $inputs['type'])->first();
         if (empty($userOtp)) {
             $errors['errors'] = [
@@ -112,7 +119,7 @@ class AuthService
 
     public function login($inputs)
     {
-        $user = User::where('phone_no', $inputs['phone_no'])->first();
+        $user = $this->userObject->where('phone_no', $inputs['phone_no'])->first();
         if (!$user) {
             $errors['errors'] = [
                 'message' => "User does not exist",
@@ -120,7 +127,7 @@ class AuthService
             ];
             return $errors;
         }
-        $userOtp = UserOtp::where('phone_no', $inputs['phone_no'])
+        $userOtp = $this->otpObject->where('phone_no', $inputs['phone_no'])
             ->where('otp', $inputs['otp'])
             ->whereNull('verified_at')
             ->where('type', 'login')
@@ -142,15 +149,23 @@ class AuthService
                 'user' => $user,
                 'token' => $user->createToken(config('app.name'))->accessToken,
             ];
+            $userOtp->delete();
         }
         return $data;
     }
+
     public function authenticatedUser()
     {
+
         $id = auth()->id();
-        $user = User::findOrFail($id);
+        $user = $this->userObject->findOrFail($id);
+        $userImage = $user->image;
+        $imagePath = $userImage ? asset('storage/assets/'.$userImage->image) : null;
+        $user->image_url = $imagePath;
+        unset($user->image);
         return $user;
     }
+
     public function logout()
     {
         $user = auth()->user();
