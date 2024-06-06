@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ExpenseParticipation;
 use App\Models\Group;
 use App\Models\GroupMember;
 use Illuminate\Support\Facades\DB;
@@ -10,11 +11,13 @@ class GroupService
 {
     private $groupObject;
     private $groupMemberObject;
+    private $userParticipatedInExpense;
 
     public function __construct()
     {
         $this->groupMemberObject = new GroupMember;
-        $this->groupObject = new Group; 
+        $this->groupObject = new Group;
+        $this->userParticipatedInExpense = new ExpenseParticipation;
     }
     public function collection($inputs)
     {
@@ -22,11 +25,27 @@ class GroupService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
+
         $groups = $this->groupObject->with($includes)->whereHas('members', function ($query) {
             $query->where('user_id', auth()->id());
         });
+        $groupDetails = $groups->with(['members', 'expenses'])->get();
+        foreach ($groupDetails as $group) {
+            $totalPaidByUser = $group->expenses()
+                ->where('payer_user_id', auth()->id()) 
+                ->sum('amount');
+            $totalBorrowedByUser = $this->userParticipatedInExpense->where('user_id', auth()->id())
+                ->whereIn('expense_id', $group->expenses->pluck('id'))
+                ->sum('owned_amount');
+            $netAmount = $totalPaidByUser - $totalBorrowedByUser;
+            $type = ($netAmount > 0) ? "lent" : "borrowed";
+            $group->groupStatistics = [
+                'amount' => abs($netAmount),
+                'type' => $type,
+            ];
+        }
 
-        return $groups->get();
+        return $groupDetails;
     }
 
     public function store($inputs)
@@ -63,6 +82,7 @@ class GroupService
 
     public function delete($id)
     {
+       
         $group = $this->resource($id);
         if($group->type == "none_group_expenses"){
             $error['errors'] =[
