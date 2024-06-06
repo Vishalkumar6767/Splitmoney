@@ -137,14 +137,14 @@ class ExpenseService
 
     public function resourceGroupStatistics($groupId)
 {
-    $groupDetails = Group::with(['members', 'expense'])->find($groupId);
+    $groupDetails = Group::with(['members', 'expenses'])->find($groupId);
     $groupStatistics = [];
     foreach ($groupDetails->members as $member) {
-        $lentByMember = $groupDetails->expense()
+        $lentByMember = $groupDetails->expenses()
             ->where('payer_user_id', $member->id) 
             ->sum('amount');
         $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
-            ->whereIn('expense_id', $groupDetails->expense->pluck('id'))
+            ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
             ->sum('owned_amount');
         if ($lentByMember > $borrowedByMember) {
             $remainingAmountToGet = $lentByMember - $borrowedByMember;
