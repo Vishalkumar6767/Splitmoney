@@ -21,7 +21,7 @@ class InviteGroupMemberService
         $this->userObject = new User;
         $this->groupMemberObject = new GroupMember;
         $this->groupObject = new Group;
-       $this->inviteGroupMemberObject = new InviteGroupMember;
+        $this->inviteGroupMemberObject = new InviteGroupMember;
     }
 
     public function collection()
@@ -33,7 +33,7 @@ class InviteGroupMemberService
         $group = $this->groupObject->where('type', "none_group_expenses")->find($inputs['group_id']);
         if ($group) {
             $error['errors'] = [
-                'message' => "Group type is None group expenses",
+                'message' => "Group type is Non-group expenses",
                 'code' => 400
             ];
             return $error;

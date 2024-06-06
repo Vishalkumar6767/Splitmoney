@@ -34,7 +34,7 @@ class UserController extends Controller
      */
     public function store(Upsert $request)
     {
-        $data = User::create($request->validated());
+        $data = $this->userService->store($request->validated());
         if (isset($data['errors'])) {
             return response()->json($data['errors'], 400);
         }

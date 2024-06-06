@@ -60,15 +60,16 @@ class UserService
         return $success;
     }
     public function upload($inputs)
-    { 
+    {
+        $user = auth()->user();
         $img = $inputs['image'];
         $ext = $img->getClientOriginalExtension();
         $imageName = time() . '.' . $ext;
         $img->move(storage_path('app/public/assets'), $imageName);
-        $image = $this->imageObject->create([
-            'user_id' => auth()->id(),
+        $image = $user->image()->create([
             'image' => $imageName,
         ]);
+
         $data = [
             'status' => true,
             'message' => "Image uploaded Successfully",

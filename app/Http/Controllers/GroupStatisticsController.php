@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Expense\GroupStatisticsRequest;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 
@@ -22,18 +21,6 @@ class GroupStatisticsController extends Controller
             return response()->json($data['errors'], 400);
         }
         return response()->json($data,200);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(GroupStatisticsRequest $request)
-    {
-        $data = $this->expenseService->storeGroupStatistics($request->validated());
-        if(isset($data['errors'])){
-            return response()->json($data['errors'],400);
-        }
-        return response()->json($data,200);  
     }
 
     /**

@@ -77,7 +77,14 @@ class ExpenseService
             'description' => $inputs['description'],
             'date' => $inputs['date']
         ]);
-
+        $totalSharedAmount = array_sum((array_column($inputs['user_expenses'], 'owned_amount')));
+        if ($inputs['type'] === "UNEQUALLY" &&  $expense->amount !== $totalSharedAmount) {
+            $error['errors'] = [
+                'message' => "Kindly check shared amount.",
+                'code' => 400
+            ];
+            return $error;
+        }
         $this->addUserExpenses($inputs, $expense);
         DB::commit();
         $success['message'] = "Data updated successfully";
