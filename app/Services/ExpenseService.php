@@ -23,7 +23,7 @@ class ExpenseService
             $includes = explode(",", $inputs['includes']);
         }
         $expenses = $this->expenseObject->with($includes)
-            ->where('group_id', $inputs['group_id'])->get();
+            ->where('group_id', $inputs['group_id'])->orderBy('created_at','desc')->get();
         return $expenses;
     }
 
@@ -71,7 +71,7 @@ class ExpenseService
         $expense = $this->expenseObject->findOrFail($id);
         $expense->update([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => auth()->id(),
+            'payer_user_id' => $inputs['payer_user_id'],
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],
