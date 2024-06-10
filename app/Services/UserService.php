@@ -84,7 +84,7 @@ class UserService
                 'data' => $image
             ];
         }
-        if ($inputs['type'] === 'GROUP') {
+        if ($inputs['type'] === "GROUP") {
             $groupId = $inputs['group_id'];
             $group = $this->groupObject->findOrFail($groupId);
             $img = $inputs['url'];
