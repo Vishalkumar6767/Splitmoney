@@ -22,7 +22,9 @@ class ImageRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'image'=>'required|mimes:png,jpg,jpeg,gif',
+           'url'=>'required|mimes:png,jpg,jpeg,gif',
+           'type'=>'required|in:USER,GROUP',
+           'group_id'=>'required_if:type,GROUP|exists:groups,id',
         ];
     }
 }

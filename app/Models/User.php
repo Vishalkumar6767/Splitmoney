@@ -61,9 +61,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ExpenseParticipation::class);
     }
+
     public function image()
     {
-        return $this->hasOne(Image::class,'user_id');
+        return $this->morphOne(Image::class, 'imageable');
     }
     public function setEmailAttribute($email)
     {
@@ -73,7 +74,7 @@ class User extends Authenticatable
     {
         return Attribute::make(
             set: fn ($name) => strtolower($name),
-            get: fn ($name)=>ucwords($name),
+            get: fn ($name) => ucwords($name),
         );
     }
 }

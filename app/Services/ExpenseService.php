@@ -23,7 +23,7 @@ class ExpenseService
             $includes = explode(",", $inputs['includes']);
         }
         $expenses = $this->expenseObject->with($includes)
-            ->where('group_id', $inputs['group_id'])->orderBy('created_at','desc')->get();
+            ->where('group_id', $inputs['group_id'])->orderBy('created_at', 'desc')->get();
         return $expenses;
     }
 
@@ -32,7 +32,7 @@ class ExpenseService
         DB::beginTransaction();
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
-            'payer_user_id' => auth()->id(),
+            'payer_user_id' => $inputs['payer_user_id'],
             'amount' => $inputs['amount'],
             'type' => $inputs['type'],
             'description' => $inputs['description'],
@@ -52,11 +52,11 @@ class ExpenseService
         return $success;
     }
 
-    public function resource($id,$inputs)
+    public function resource($id, $inputs)
     {
 
         $includes = [];
-      
+
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
@@ -136,38 +136,37 @@ class ExpenseService
     }
 
     public function resourceGroupStatistics($groupId)
-{
-    $groupDetails = Group::with(['members', 'expenses'])->find($groupId);
-    $groupStatistics = [];
-    foreach ($groupDetails->members as $member) {
-        $lentByMember = $groupDetails->expenses()
-            ->where('payer_user_id', $member->id) 
-            ->sum('amount');
-        $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
-            ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
-            ->sum('owned_amount');
-        if ($lentByMember > $borrowedByMember) {
-            $remainingAmountToGet = $lentByMember - $borrowedByMember;
-            $groupStatistics[] = [
-                'user' => $member,
-                'expense' => [
-                    'total' => $remainingAmountToGet,
-                    'type' => "DEBT",
-                ],
-            ];
+    {
+        $groupDetails = Group::with(['members', 'expenses'])->find($groupId);
+        $groupStatistics = [];
+        foreach ($groupDetails->members as $member) {
+            $lentByMember = $groupDetails->expenses()
+                ->where('payer_user_id', $member->id)
+                ->sum('amount');
+            $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
+                ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
+                ->sum('owned_amount');
+            if ($lentByMember > $borrowedByMember) {
+                $remainingAmountToGet = $lentByMember - $borrowedByMember;
+                $groupStatistics[] = [
+                    'user' => $member,
+                    'expense' => [
+                        'total' => $remainingAmountToGet,
+                        'type' => "DEBT",
+                    ],
+                ];
+            }
+            if ($lentByMember < $borrowedByMember) {
+                $remainingAmountToPay = $borrowedByMember - $lentByMember;
+                $groupStatistics[] = [
+                    'user' => $member,
+                    'expense' => [
+                        'total' => $remainingAmountToPay,
+                        'type' => "CREDIT",
+                    ],
+                ];
+            }
         }
-        if ($lentByMember < $borrowedByMember) {
-            $remainingAmountToPay = $borrowedByMember - $lentByMember;
-            $groupStatistics[] = [
-                'user' => $member,
-                'expense' => [
-                    'total' => $remainingAmountToPay,
-                    'type' => "CREDIT",
-                ],
-            ];
-        }
+        return $groupStatistics;
     }
-    return $groupStatistics;
-}
-
 }
