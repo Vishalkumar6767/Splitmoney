@@ -9,12 +9,14 @@ class Image extends Model
 {
     use HasFactory;
     protected $fillable =[
-        'user_id',
-        'image'
+        'type',
+        'group_id',
+        'url'
 
     ];
-    public function user()
+    
+    public function imageAble()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTO(__FUNCTION__,'imageable_type','imageable_id');
     }
 }

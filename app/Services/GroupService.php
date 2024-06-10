@@ -32,7 +32,7 @@ class GroupService
         $groupDetails = $groups->with(['members', 'expenses'])->get();
         foreach ($groupDetails as $group) {
             $totalPaidByUser = $group->expenses()
-                ->where('payer_user_id', auth()->id()) 
+                ->where('payer_user_id', auth()->id())
                 ->sum('amount');
             $totalBorrowedByUser = $this->userParticipatedInExpense->where('user_id', auth()->id())
                 ->whereIn('expense_id', $group->expenses->pluck('id'))
@@ -43,6 +43,11 @@ class GroupService
                 'amount' => abs($netAmount),
                 'type' => $type,
             ];
+            $group->id;
+            $groupImage = $group->image;
+            $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
+            $group->image_url = $imagePath;
+            unset($group->image);
         }
 
         return $groupDetails;
@@ -53,15 +58,16 @@ class GroupService
         DB::beginTransaction();
         $group = $this->groupObject->create([
             'name' => $inputs['name'],
-            'type'=>$inputs['type'],
+            'type' => $inputs['type'],
             'description' => $inputs['description'],
             'created_by' => auth()->id(),
         ]);
         $group->members()->sync([auth()->id()]);
+
         DB::commit();
         return [
             'group' => $group,
-            'owner' => auth()->user()
+            'owner' => auth()->user(),
         ];
     }
 
@@ -69,6 +75,10 @@ class GroupService
     {
 
         $group = $this->groupObject->with('members')->findOrFail($id);
+        $groupImage = $group->image;
+        $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
+        $group->image_url = $imagePath;
+        unset($group->image);
         return $group;
     }
 
@@ -82,11 +92,11 @@ class GroupService
 
     public function delete($id)
     {
-       
+
         $group = $this->resource($id);
-        if($group->type == "none_group_expenses"){
-            $error['errors'] =[
-                'message' =>"This is None expense group ",
+        if ($group->type == "none_group_expenses") {
+            $error['errors'] = [
+                'message' => "This is None expense group ",
                 'code' => 400
             ];
             return $error;

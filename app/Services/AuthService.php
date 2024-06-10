@@ -160,7 +160,7 @@ class AuthService
         $id = auth()->id();
         $user = $this->userObject->findOrFail($id);
         $userImage = $user->image;
-        $imagePath = $userImage ? asset('storage/assets/'.$userImage->image) : null;
+        $imagePath = $userImage ? asset('storage/assets/'.$userImage->url) : null;
         $user->image_url = $imagePath;
         unset($user->image);
         return $user;
