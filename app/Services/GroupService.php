@@ -31,6 +31,7 @@ class GroupService
             $query->where('user_id', auth()->id());
         });
         $groupDetails = $groups->with(['members', 'expenses'])->get();
+        $overallNetAmount = 0;
         foreach ($groupDetails as $group) {
             $totalPaidByUser = $group->expenses()
                 ->where('payer_user_id', auth()->id())
@@ -39,13 +40,13 @@ class GroupService
             $totalBorrowedByUser = $this->userParticipatedInExpense->where('user_id', auth()->id())
                 ->whereIn('expense_id', $group->expenses->pluck('id'))
                 ->sum('owned_amount');
-                $totalSettledAmount = $group->expenses()
+            $totalSettledAmount = $group->expenses()
                 ->where('payer_user_id', auth()->id())
-                ->where('type','SETTLEMENT')
+                ->where('type', 'SETTLEMENT')
                 ->sum('amount');
             $netAmount = $totalPaidByUser - $totalBorrowedByUser;
-            $netAmountAfterSettle = $netAmount- $totalSettledAmount;
-          
+            $netAmountAfterSettle = $netAmount - $totalSettledAmount;
+
             $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "Balanced");
             $group->groupStatistics = [
                 'amount' => abs($netAmount),
@@ -56,9 +57,14 @@ class GroupService
             $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
             $group->image_url = $imagePath;
             unset($group->image);
+            $overallNetAmount += $netAmountAfterSettle;
         }
-
-        return $groupDetails;
+        $type = ($overallNetAmount > 0) ? "lent" : (($overallNetAmount < 0) ? "borrowed" : "Balanced");
+        return $data['groups'] = [
+            'groups' => $groupDetails,
+            'overall' => abs($overallNetAmount),
+            'overall_type' => $type
+        ];
     }
 
     public function store($inputs)
@@ -78,17 +84,23 @@ class GroupService
             'owner' => auth()->user(),
         ];
     }
-
     public function resource($id)
     {
-
-        $group = $this->groupObject->with('members')->findOrFail($id);
+        $group = $this->groupObject->with('members.image')->findOrFail($id);
         $groupImage = $group->image;
         $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
         $group->image_url = $imagePath;
         unset($group->image);
+        foreach ($group->members as $member) {
+            $memberImage = $member->image;
+            $imagePath = $memberImage ? asset('storage/assets/' . $memberImage->url) : null;
+            $member->image_url = $imagePath;
+            unset($member->image);
+        }
+
         return $group;
     }
+
 
     public function update($id, $inputs)
     {
@@ -101,7 +113,6 @@ class GroupService
     public function delete($id)
     {
         $group = $this->groupObject->findOrFail($id);
-
         if ($group->type == "none_group_expenses") {
             return [
                 'errors' => [
@@ -110,27 +121,16 @@ class GroupService
                 ]
             ];
         }
-
         DB::beginTransaction();
-
         try {
-            // First, delete the settlements associated with the group's expenses
             $expenses = Expense::where('group_id', $id)->get();
             foreach ($expenses as $expense) {
                 $expense->settlements()->delete();
             }
-
-            // Then, delete the expenses
             Expense::where('group_id', $id)->delete();
-
-            // Delete group members
             $this->groupMemberObject->where('group_id', $id)->delete();
-
-            // Finally, delete the group itself
             $group->delete();
-
             DB::commit();
-
             return [
                 'message' => "Group deleted successfully"
             ];

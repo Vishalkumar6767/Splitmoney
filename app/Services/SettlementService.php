@@ -79,12 +79,18 @@ class SettlementService
             ->where('payer_user_id', auth()->id())
             ->where('type', 'SETTLEMENT')
             ->sum('amount');
-        $netAmountAfterSettledByPayer =  $netAmount - $totalAmountSettledByPayer;
+        $netAmountAfterSettledByPayer = $netAmount - $totalAmountSettledByPayer;
         $type = ($netAmountAfterSettledByPayer > 0) ? "lent" : (($netAmountAfterSettledByPayer < 0) ? "borrowed" : "Balanced");
         $settlements->groupStatistics = [
-            'amount' => abs($netAmount),
+            'amount' => abs( $netAmountAfterSettledByPayer),
             'type' => $type,
         ];
         return $settlements;
+    }
+    public function delete($id){
+        $settlements = $this->settlementObject->findOrFail($id);
+       $settlements ->delete();
+        $success['message'] = "data Deleted Successfully";
+        return $success;
     }
 }
