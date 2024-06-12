@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Expense;
 use App\Models\ExpenseParticipation;
 use App\Models\Group;
+use DivisionByZeroError;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseService
@@ -102,38 +103,68 @@ class ExpenseService
 
     protected function addUserExpenses($inputs, $expense)
     {
-        if (isset($inputs['user_expenses'])) {
-            $expense->userExpenses()->delete();
-            if ($inputs['type'] === "EQUALLY") {
-                $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
-                foreach ($inputs['user_expenses'] as $userExpense) {
-                    $expense->userExpenses()->create([
-                        'user_id' => $userExpense['user_id'],
-                        'expense_id' => $expense->id,
-                        'owned_amount' => $ownedUserAmount
-                    ]);
-                }
-            }
-
-            if ($inputs['type'] === "UNEQUALLY") {
-                $totalSharedAmount = array_sum((array_column($inputs['user_expenses'], 'owned_amount')));
-                if ($expense->amount !== $totalSharedAmount) {
-                    $error['errors'] = [
-                        'message' => "Kindly check shared amount.",
+        try {
+            if (isset($inputs['user_expenses'])) {
+                // Check if user_expenses is not empty
+                if (count($inputs['user_expenses']) === 0) {
+                    return $error['errors'] = [
+                        'message' => "Please add at least one member.",
                         'code' => 400
                     ];
-                    return $error;
                 }
-                foreach ($inputs['user_expenses'] as $userExpense) {
-                    $expense->userExpenses()->create([
-                        'user_id' => $userExpense['user_id'],
-                        'expense_id' => $expense->id,
-                        'owned_amount' => $userExpense['owned_amount']
-                    ]);
+                // Delete existing user expenses
+                $expense->userExpenses()->delete();
+
+                if ($inputs['type'] === "EQUALLY") {
+                    // Ensure there is at least one user expense to avoid division by zero
+                    if (count($inputs['user_expenses']) > 0) {
+                        $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
+                        foreach ($inputs['user_expenses'] as $userExpense) {
+                            $expense->userExpenses()->create([
+                                'user_id' => $userExpense['user_id'],
+                                'expense_id' => $expense->id,
+                                'owned_amount' => $ownedUserAmount
+                            ]);
+                        }
+                    }
                 }
+
+                if ($inputs['type'] === "UNEQUALLY") {
+                    // Calculate the total shared amount
+                    $totalSharedAmount = array_sum(array_column($inputs['user_expenses'], 'owned_amount'));
+                    if ($expense->amount !== $totalSharedAmount) {
+                        return $error['errors'] = [
+                            'message' => "Kindly check shared amount.",
+                            'code' => 400
+                        ];
+                    }
+                    foreach ($inputs['user_expenses'] as $userExpense) {
+                        $expense->userExpenses()->create([
+                            'user_id' => $userExpense['user_id'],
+                            'expense_id' => $expense->id,
+                            'owned_amount' => $userExpense['owned_amount']
+                        ]);
+                    }
+                }
+            } else {
+                return $data['errors'] = [
+                    'message' => "User expenses data is missing.",
+                    'code' => 400
+                ];
             }
+        } catch (DivisionByZeroError $e) {
+            return $error['errors'] = [
+                'message' => "Division by zero error: Please ensure there are user expenses provided.",
+                'code' => 400
+            ];
+        } catch (\Exception $e) {
+            return $errors['errors'] = [
+                'message' => "An unexpected error occurred: " . $e->getMessage(),
+                'code' => 500
+            ];
         }
     }
+
 
     public function resourceGroupStatistics($groupId)
     {
@@ -142,30 +173,25 @@ class ExpenseService
         foreach ($groupDetails->members as $member) {
             $lentByMember = $groupDetails->expenses()
                 ->where('payer_user_id', $member->id)
+                ->where('type', '!=', 'SETTLEMENT')
                 ->sum('amount');
             $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
                 ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
                 ->sum('owned_amount');
-            if ($lentByMember > $borrowedByMember) {
-                $remainingAmountToGet = $lentByMember - $borrowedByMember;
-                $groupStatistics[] = [
-                    'user' => $member,
-                    'expense' => [
-                        'total' => $remainingAmountToGet,
-                        'type' => "DEBT",
-                    ],
-                ];
-            }
-            if ($lentByMember < $borrowedByMember) {
-                $remainingAmountToPay = $borrowedByMember - $lentByMember;
-                $groupStatistics[] = [
-                    'user' => $member,
-                    'expense' => [
-                        'total' => $remainingAmountToPay,
-                        'type' => "CREDIT",
-                    ],
-                ];
-            }
+            $settlementAmountByMember = $groupDetails->expenses()
+                ->where('payer_user_id', $member->id)
+                ->where('type', 'SETTLEMENT')
+                ->sum('amount');
+            $netAmount = $lentByMember - $borrowedByMember;
+            $netAmountAfterSettled =  $netAmount - $settlementAmountByMember;
+            $type = ($netAmountAfterSettled > 0) ? "DEBT" : (($netAmountAfterSettled < 0) ? "CREDIT" : "Balanced");
+            $groupStatistics[] = [
+                'user' => $member,
+                'expense' => [
+                    'total' => abs($netAmountAfterSettled),
+                    'type' => $type,
+                ],
+            ];
         }
         return $groupStatistics;
     }
