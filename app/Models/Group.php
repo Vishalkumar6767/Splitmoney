@@ -52,6 +52,10 @@ class Group extends Model
     {
         return $this->morphOne(Image::class,'imageable');
     }
+    public function settlements()
+    {
+        return $this->hasMany(Settlement::class, 'group_id', 'id');
+    }
    
 
 }

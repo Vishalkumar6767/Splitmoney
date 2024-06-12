@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
 use App\Models\ExpenseParticipation;
 use App\Models\Group;
 use App\Models\GroupMember;
@@ -33,12 +34,19 @@ class GroupService
         foreach ($groupDetails as $group) {
             $totalPaidByUser = $group->expenses()
                 ->where('payer_user_id', auth()->id())
+                ->where('type', '!=', 'SETTLEMENT')
                 ->sum('amount');
             $totalBorrowedByUser = $this->userParticipatedInExpense->where('user_id', auth()->id())
                 ->whereIn('expense_id', $group->expenses->pluck('id'))
                 ->sum('owned_amount');
+                $totalSettledAmount = $group->expenses()
+                ->where('payer_user_id', auth()->id())
+                ->where('type','SETTLEMENT')
+                ->sum('amount');
             $netAmount = $totalPaidByUser - $totalBorrowedByUser;
-            $type = ($netAmount > 0) ? "lent" : "borrowed";
+            $netAmountAfterSettle = $netAmount- $totalSettledAmount;
+          
+            $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "none_transaction");
             $group->groupStatistics = [
                 'amount' => abs($netAmount),
                 'type' => $type,
@@ -84,7 +92,7 @@ class GroupService
 
     public function update($id, $inputs)
     {
-        $group = $this->resource($id);
+        $group = $this->groupObject->findOrFail($id);
         $group->update($inputs);
         $success['message'] = "Group Updated successfully";
         return $success;
@@ -92,19 +100,48 @@ class GroupService
 
     public function delete($id)
     {
+        $group = $this->groupObject->findOrFail($id);
 
-        $group = $this->resource($id);
         if ($group->type == "none_group_expenses") {
-            $error['errors'] = [
-                'message' => "This is None expense group ",
-                'code' => 400
+            return [
+                'errors' => [
+                    'message' => "This is None expense group",
+                    'code' => 400
+                ]
             ];
-            return $error;
         }
-        $groupMember = $this->groupMemberObject->where('group_id', $id);
-        $groupMember->delete();
-        $group->delete();
-        $success['message'] = "Group deleted successfully";
-        return $success;
+
+        DB::beginTransaction();
+
+        try {
+            // First, delete the settlements associated with the group's expenses
+            $expenses = Expense::where('group_id', $id)->get();
+            foreach ($expenses as $expense) {
+                $expense->settlements()->delete();
+            }
+
+            // Then, delete the expenses
+            Expense::where('group_id', $id)->delete();
+
+            // Delete group members
+            $this->groupMemberObject->where('group_id', $id)->delete();
+
+            // Finally, delete the group itself
+            $group->delete();
+
+            DB::commit();
+
+            return [
+                'message' => "Group deleted successfully"
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'errors' => [
+                    'message' => $e->getMessage(),
+                    'code' => 500
+                ]
+            ];
+        }
     }
 }

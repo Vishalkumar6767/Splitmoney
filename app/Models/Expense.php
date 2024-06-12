@@ -28,4 +28,8 @@ class Expense extends Model
     {
         return $this->hasMany(ExpenseParticipation::class, 'expense_id', 'id');
     }
+    public function settlements()
+    {
+        return $this->hasMany(Settlement::class, 'expense_id', 'id');
+    }
 }

@@ -8,7 +8,9 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\GroupStatisticsController;
 use App\Http\Controllers\InviteGroupController;
+use App\Http\Controllers\SettlementController;
 use App\Http\Controllers\UserController;
+
 
 //User Routes
 
@@ -35,6 +37,10 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('expenses', ExpenseController::class);
     //group-statistics route
     Route::resource('group-statistics', GroupStatisticsController::class);
+    //add -settlement
+    Route::resource('settlements', SettlementController::class);
+    
 });
 // Add invited members in group members
 Route::resource('invite-group', InviteGroupController::class);
+
