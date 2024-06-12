@@ -12,7 +12,7 @@ class SettlementService
      * Create a new class instance.
      */
     private $expenseObject;
-    private $settlementObject ;
+    private $settlementObject;
     public function __construct()
     {
         $this->expenseObject = new Expense;
@@ -20,18 +20,14 @@ class SettlementService
     }
     public function collection($inputs)
     {
-        
-        
         $includes = [];
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-       
+
         $settlements = $this->settlementObject->with($includes)
             ->where('group_id', $inputs['group_id'])->orderBy('created_at', 'desc')->get();
-
         return $settlements;
-    
     }
     public function store($inputs)
     {
@@ -69,17 +65,17 @@ class SettlementService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-       
+
         $settlements = $this->settlementObject->with($includes)->findOrFail($id);
         return $settlements;
-//         $totalAmountPayerLent = $this->expenseObject->where('group_id', $inputs['group_id'])
-//         ->where('payer_user_id', auth()->id())
-//         ->where('type', '!=', 'SETTLEMENT')
-//         ->sum('amount');
-//     $totalAmountPayeeLent = $this->expenseObject->where('group_id', $inputs['group_id'])
-//         ->where('payer_user_id', $inputs['payee_id'])
-//         ->where('type', '!=', 'SETTLEMENT')
-//         ->sum('amount');
-//    $netAmount = $totalAmountPayerLent - $totalAmountPayeeLent;
+        //         $totalAmountPayerLent = $this->expenseObject->where('group_id', $inputs['group_id'])
+        //         ->where('payer_user_id', auth()->id())
+        //         ->where('type', '!=', 'SETTLEMENT')
+        //         ->sum('amount');
+        //     $totalAmountPayeeLent = $this->expenseObject->where('group_id', $inputs['group_id'])
+        //         ->where('payer_user_id', $inputs['payee_id'])
+        //         ->where('type', '!=', 'SETTLEMENT')
+        //         ->sum('amount');
+        //    $netAmount = $totalAmountPayerLent - $totalAmountPayeeLent;
     }
 }

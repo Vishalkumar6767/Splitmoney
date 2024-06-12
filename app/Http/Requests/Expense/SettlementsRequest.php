@@ -23,7 +23,6 @@ class SettlementsRequest extends FormRequest
     {
         return [
             'group_id' => 'required|exists:groups,id',
-            'payer_user_id'=>'exists:users,id',
             'amount' => 'required|numeric',
             'type' => 'string|in:SETTLEMENT',
             'description' => 'nullable',

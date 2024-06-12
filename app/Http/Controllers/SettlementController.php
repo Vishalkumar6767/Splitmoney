@@ -37,7 +37,7 @@ class SettlementController extends Controller
     }
     public function show(int $id, Request $request)
     {
-        $data = $this->settlementService->resource($id,$request);
+        $data = $this->settlementService->resource($id,$request->all());
         if(isset($data['errors'])){
             return response()->json($data['errors'],400);
         }
