@@ -65,17 +65,26 @@ class SettlementService
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
-
         $settlements = $this->settlementObject->with($includes)->findOrFail($id);
+        $totalAmountPayerLent = $this->expenseObject->where('group_id', $settlements->group_id)
+            ->where('payer_user_id', auth()->id())
+            ->where('type', '!=', 'SETTLEMENT')
+            ->sum('amount');
+        $totalAmountPayeeLent = $this->expenseObject->where('group_id', $settlements->group_id)
+            ->where('payer_user_id', $settlements->payee_id)
+            ->where('type', '!=', 'SETTLEMENT')
+            ->sum('amount');
+        $netAmount = $totalAmountPayerLent - $totalAmountPayeeLent;
+        $totalAmountSettledByPayer = $this->expenseObject->where('group_id', $settlements->group_id)
+            ->where('payer_user_id', auth()->id())
+            ->where('type', 'SETTLEMENT')
+            ->sum('amount');
+        $netAmountAfterSettledByPayer =  $netAmount - $totalAmountSettledByPayer;
+        $type = ($netAmountAfterSettledByPayer > 0) ? "lent" : (($netAmountAfterSettledByPayer < 0) ? "borrowed" : "Balanced");
+        $settlements->groupStatistics = [
+            'amount' => abs($netAmount),
+            'type' => $type,
+        ];
         return $settlements;
-        //         $totalAmountPayerLent = $this->expenseObject->where('group_id', $inputs['group_id'])
-        //         ->where('payer_user_id', auth()->id())
-        //         ->where('type', '!=', 'SETTLEMENT')
-        //         ->sum('amount');
-        //     $totalAmountPayeeLent = $this->expenseObject->where('group_id', $inputs['group_id'])
-        //         ->where('payer_user_id', $inputs['payee_id'])
-        //         ->where('type', '!=', 'SETTLEMENT')
-        //         ->sum('amount');
-        //    $netAmount = $totalAmountPayerLent - $totalAmountPayeeLent;
     }
 }

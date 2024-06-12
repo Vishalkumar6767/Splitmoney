@@ -46,7 +46,7 @@ class GroupService
             $netAmount = $totalPaidByUser - $totalBorrowedByUser;
             $netAmountAfterSettle = $netAmount- $totalSettledAmount;
           
-            $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "none_transaction");
+            $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "Balanced");
             $group->groupStatistics = [
                 'amount' => abs($netAmount),
                 'type' => $type,
