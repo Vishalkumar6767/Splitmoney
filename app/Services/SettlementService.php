@@ -92,7 +92,7 @@ class SettlementService
         $settlements = $this->settlementObject->findOrFail($id);
         $expense = $settlements->expenses()->delete();
         $settlements->delete();
-        $success['message'] = "data Deleted Successfully";
+        $success['message'] = "Data deleted successfully";
         return $success;
     }
 }
