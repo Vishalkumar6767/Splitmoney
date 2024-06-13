@@ -38,7 +38,7 @@ Route::middleware('auth:api')->group(function () {
     //group-statistics route
     Route::resource('group-statistics', GroupStatisticsController::class);
     //add -settlement
-    Route::resource('settlements', SettlementController::class);
+    Route::resource('settlements', SettlementController::class );
     
 });
 // Add invited members in group members

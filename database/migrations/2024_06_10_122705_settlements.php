@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('settlements', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('group_id');
-            $table->foreign('group_id')->references('id')->on('groups');
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
             $table->unsignedBigInteger('expense_id');
-            $table->foreign('expense_id')->references('id')->on('expenses');
+            $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
             $table->unsignedBigInteger('payer_user_id');
-            $table->foreign('payer_user_id')->references('id')->on('users');
+            $table->foreign('payer_user_id')->references('id')->on('users')->onDelete('cascade');
             $table->bigInteger('payee_id');
             $table->float('amount');
             $table->timestamp('date')->useCurrent();

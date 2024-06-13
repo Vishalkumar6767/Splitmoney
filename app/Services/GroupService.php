@@ -45,7 +45,7 @@ class GroupService
                 ->where('type', 'SETTLEMENT')
                 ->sum('amount');
             $netAmount = $totalPaidByUser - $totalBorrowedByUser;
-            $netAmountAfterSettle = $netAmount - $totalSettledAmount;
+            $netAmountAfterSettle = abs($netAmount) - $totalSettledAmount;
 
             $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "Balanced");
             $group->groupStatistics = [

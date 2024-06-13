@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('group_id')->references('id')->on('groups');
             $table->unsignedBigInteger('payer_user_id');
             $table->foreign('payer_user_id')->references('id')->on('users');
-            $table->float('amount');
+            $table->float('amount',12,2);
             $table->string('description')->nullable();
             $table->date('date');
             $table->timestamps();

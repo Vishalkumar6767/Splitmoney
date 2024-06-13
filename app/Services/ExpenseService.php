@@ -186,7 +186,7 @@ class ExpenseService
                 ->where('type', 'SETTLEMENT')
                 ->sum('amount');
             $netAmount = $lentByMember - $borrowedByMember;
-            $netAmountAfterSettled =  $netAmount - $settlementAmountByMember;
+            $netAmountAfterSettled = abs($netAmount) - $settlementAmountByMember;
             $type = ($netAmountAfterSettled > 0) ? "DEBT" : (($netAmountAfterSettled < 0) ? "CREDIT" : "Balanced");
             $groupStatistics[] = [
                 'user' => $member,
