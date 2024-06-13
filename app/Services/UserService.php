@@ -61,7 +61,7 @@ class UserService
         $id = auth()->id();
         $user = $this->userObject->findOrFail($id);
         $user->delete();
-        $success['message'] = "data Updated Successfully";
+        $success['message'] = "data Deleted Successfully";
         return $success;
     }
     public function upload($inputs)

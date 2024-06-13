@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Expense;
 use App\Models\ExpenseParticipation;
 use App\Models\Group;
+use App\Models\Settlement;
 use DivisionByZeroError;
 use Illuminate\Support\Facades\DB;
 
@@ -94,6 +95,8 @@ class ExpenseService
 
     public function delete($id)
     {
+        $settlement = Settlement:: where('expense_id',$id)->delete();
+       
         $expense = $this->expenseObject->findOrFail($id);
         $expense->userExpenses()->delete();
         $expense->delete();

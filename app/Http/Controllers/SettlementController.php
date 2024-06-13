@@ -54,8 +54,12 @@ class SettlementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        $data = $this->settlementService->delete($id);
+        if(isset($data['errors'])){
+            return response()->json($data['errors'],400);
+        }
+        return response()->json($data,200);
     }
 }
