@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('expense_id');
-            $table->float('owned_amount');
+            $table->float('owned_amount',12,2);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('expense_id')->references('id')->on('expenses')->onDelete('cascade');
             $table->timestamps();

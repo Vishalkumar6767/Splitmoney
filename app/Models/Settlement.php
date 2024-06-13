@@ -27,7 +27,7 @@ class Settlement extends Model
     {
         return $this->belongsTo(Group::class, 'group_id', 'id');
     }
-    public function expense()
+    public function expenses()
     {
         return $this->belongsTo(Expense::class,'expense_id','id');
     }

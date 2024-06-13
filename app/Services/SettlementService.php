@@ -82,14 +82,16 @@ class SettlementService
         $netAmountAfterSettledByPayer = $netAmount - $totalAmountSettledByPayer;
         $type = ($netAmountAfterSettledByPayer > 0) ? "lent" : (($netAmountAfterSettledByPayer < 0) ? "borrowed" : "Balanced");
         $settlements->groupStatistics = [
-            'amount' => abs( $netAmountAfterSettledByPayer),
+            'amount' => abs($netAmountAfterSettledByPayer),
             'type' => $type,
         ];
         return $settlements;
     }
-    public function delete($id){
+    public function delete($id)
+    {
         $settlements = $this->settlementObject->findOrFail($id);
-       $settlements ->delete();
+        $expense = $settlements->expenses()->delete();
+        $settlements->delete();
         $success['message'] = "data Deleted Successfully";
         return $success;
     }
