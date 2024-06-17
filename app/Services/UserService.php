@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Group;
-use App\Models\Image;
 use App\Models\User;
 
 class UserService
@@ -11,7 +10,7 @@ class UserService
     private $userObject;
     private $groupObject;
 
-    public function __construct(User $user)
+    public function __construct()
     {
 
         $this->groupObject = new Group;
@@ -53,7 +52,7 @@ class UserService
         $id = auth()->id();
         $user = $this->userObject->findOrFail($id);
         $user->update($inputs);
-        $success['message'] = "data Updated Successfully";
+        $success['message'] = "Data updated successfully";
         return $success;
     }
     public function delete($id)
@@ -61,7 +60,7 @@ class UserService
         $id = auth()->id();
         $user = $this->userObject->findOrFail($id);
         $user->delete();
-        $success['message'] = "data Deleted Successfully";
+        $success['message'] = "Data deleted successfully";
         return $success;
     }
     public function upload($inputs)
@@ -79,7 +78,7 @@ class UserService
 
             $data = [
                 'status' => true,
-                'message' => "Image uploaded Successfully",
+                'message' => "Image uploaded successfully",
                 'path' => asset('storage/assets/' . $imageName),
                 'data' => $image
             ];
@@ -97,7 +96,7 @@ class UserService
 
             $data = [
                 'status' => true,
-                'message' => "Image uploaded Successfully",
+                'message' => "Image uploaded successfully",
                 'path' => asset('storage/assets/' . $imageName),
                 'data' => $image
             ];
