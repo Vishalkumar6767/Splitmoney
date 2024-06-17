@@ -95,8 +95,8 @@ class ExpenseService
 
     public function delete($id)
     {
-        $settlement = Settlement:: where('expense_id',$id)->delete();
-       
+        $settlement = Settlement::where('expense_id', $id)->delete();
+
         $expense = $this->expenseObject->findOrFail($id);
         $expense->userExpenses()->delete();
         $expense->delete();
@@ -168,34 +168,55 @@ class ExpenseService
         }
     }
 
-
     public function resourceGroupStatistics($groupId)
     {
-        $groupDetails = Group::with(['members', 'expenses'])->find($groupId);
+        $groupDetails = Group::with(['members', 'expenses.userExpenses', 'settlements'])->find($groupId);
         $groupStatistics = [];
+
         foreach ($groupDetails->members as $member) {
+            // Calculate total amount lent by the member (excluding settlements)
             $lentByMember = $groupDetails->expenses()
                 ->where('payer_user_id', $member->id)
                 ->where('type', '!=', 'SETTLEMENT')
                 ->sum('amount');
+
+            // Calculate total amount borrowed by the member
             $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
                 ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
                 ->sum('owned_amount');
-            $settlementAmountByMember = $groupDetails->expenses()
-                ->where('payer_user_id', $member->id)
-                ->where('type', 'SETTLEMENT')
+
+            // Calculate total settlement amount received by the member
+            $settlementAmountReceivedByMember = $groupDetails->settlements()
+                ->where('payee_id', $member->id)
                 ->sum('amount');
-            $netAmount = $lentByMember - $borrowedByMember;
-            $netAmountAfterSettled = abs($netAmount) - $settlementAmountByMember;
-            $type = ($netAmountAfterSettled > 0) ? "DEBT" : (($netAmountAfterSettled < 0) ? "CREDIT" : "Balanced");
+
+            // Calculate total settlement amount paid by the member
+            $settlementAmountPaidByMember = $groupDetails->settlements()
+                ->where('payer_user_id', $member->id)
+                ->sum('amount');
+
+            // Calculate net amount (lent - borrowed - received settlements + paid settlements)
+            $netAmount = $lentByMember - $borrowedByMember + $settlementAmountPaidByMember - $settlementAmountReceivedByMember;
+
+            // Check if the user wants to settle their credit amount
+            if ($netAmount < 0 && abs($netAmount) <= $settlementAmountPaidByMember) {
+                // Adjust net amount to zero if the user has settled their credit amount
+                $netAmount = 0;
+            }
+
+            // Determine the type of balance
+            $type = ($netAmount > 0) ? "DEBT" : (($netAmount < 0) ? "CREDIT" : "BALANCED");
+
+            // Add member's financial details to the group statistics
             $groupStatistics[] = [
                 'user' => $member,
                 'expense' => [
-                    'total' => abs($netAmountAfterSettled),
+                    'total' => abs($netAmount),
                     'type' => $type,
                 ],
             ];
         }
+
         return $groupStatistics;
     }
 }
