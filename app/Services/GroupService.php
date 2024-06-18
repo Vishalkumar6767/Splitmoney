@@ -66,7 +66,7 @@ class GroupService
             'overall_type' => $type
         ];
     }
-    
+
     public function store($inputs)
     {
         DB::beginTransaction();
@@ -90,7 +90,6 @@ class GroupService
         $groupImage = $group->image;
         $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
         $group->image_url = $imagePath;
-        dd($imagePath);
         unset($group->image);
         foreach ($group->members as $member) {
             $memberImage = $member->image;
