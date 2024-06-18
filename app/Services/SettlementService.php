@@ -39,15 +39,23 @@ class SettlementService
             'type' => "SETTLEMENT",
             'description' => $inputs['description'],
             'date' => now(),
-
         ]);
+        if ($inputs['payee_id'] === auth()->id()) {
+            $error['errors'] = [
+                'message' => " Sorry You can settle up your own account",
+                'code' => 400
+            ];
+            return $error;
+        }
+
         $this->addSettlement($inputs, $expense);
-        $success['message'] = "Data added successfully";
+        $success['message'] = "Amount settled successfully";
         DB::commit();
         return $success;
     }
     protected function addSettlement($inputs, $expense)
     {
+
         if ($expense->type === "SETTLEMENT") {
             $expense->settlements()->create([
                 'group_id' => $expense->group_id,
@@ -74,6 +82,7 @@ class SettlementService
             ->where('payer_user_id', $settlements->payee_id)
             ->where('type', '!=', 'SETTLEMENT')
             ->sum('amount');
+
         $netAmount = $totalAmountPayerLent - $totalAmountPayeeLent;
         $totalAmountSettledByPayer = $this->expenseObject->where('group_id', $settlements->group_id)
             ->where('payer_user_id', auth()->id())

@@ -184,6 +184,12 @@ class ExpenseService
             $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
                 ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
                 ->sum('owned_amount');
+                if($borrowedByMember === 0 & $lentByMember === 0){
+                   
+                        $message['message'] = "No transaction Yet";
+                        return $message;
+                   
+                }
 
             // Calculate total settlement amount received by the member
             $settlementAmountReceivedByMember = $groupDetails->settlements()
