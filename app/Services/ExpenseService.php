@@ -18,17 +18,62 @@ class ExpenseService
         $this->expenseObject = $expenseObject;
     }
 
+    // public function collection($inputs)
+    // {
+    //     $includes = [];
+    //     if (!empty($inputs['includes'])) {
+    //         $includes = explode(",", $inputs['includes']);
+    //     }
+    //     $expenses = $this->expenseObject->with($includes)
+    //         ->where('group_id', $inputs['group_id'])->orderBy('created_at', 'desc')->get();
+    //     return $expenses;
+    // }
+
+
     public function collection($inputs)
     {
         $includes = [];
         if (!empty($inputs['includes'])) {
             $includes = explode(",", $inputs['includes']);
         }
+    
+        if (!in_array('userExpenses', $includes)) {
+            $includes[] = 'userExpenses';
+        }
+    
         $expenses = $this->expenseObject->with($includes)
-            ->where('group_id', $inputs['group_id'])->orderBy('created_at', 'desc')->get();
+            ->where('group_id', $inputs['group_id'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        // Loop through each expense to calculate lent and borrowed amounts
+        foreach ($expenses as $expense) {
+            $expenseLentAmount = 0;
+            $expenseBorrowedAmount = 0;
+    
+            if (!empty($expense->userExpenses) && is_iterable($expense->userExpenses)) {
+                // Iterate through user expenses for this expense
+                foreach ($expense->userExpenses as $userExpense) {
+                    if ($expense->payer_user_id == $userExpense->user_id) {
+                        // Subtract the owned_amount from the total amount paid by the payer
+                         $expenseBorrowedAmount += $userExpense->owned_amount;
+                    } else {
+                        // Add to borrowed amount for non-payers
+                        $expenseLentAmount += $userExpense->owned_amount;
+                    }
+                }
+            }
+    
+            // Set the calculated amounts to the expense
+            $expense->you_borrowed = $expenseBorrowedAmount;
+            $expense->you_lent = $expenseLentAmount;
+        }
+    
         return $expenses;
     }
+    
 
+    
     public function store($inputs)
     {
         DB::beginTransaction();
