@@ -2,5 +2,5 @@
 
 return [
 
-    'frontWebsiteUrl' => 'https://splitmoney.tech/signup', // Use string format for URL
+    'frontWebsiteUrl' => 'https://splitmoney.tech/group-invite', // Use string format for URL
 ];
