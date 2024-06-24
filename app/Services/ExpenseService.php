@@ -17,19 +17,7 @@ class ExpenseService
     {
         $this->expenseObject = $expenseObject;
     }
-
-    // public function collection($inputs)
-    // {
-    //     $includes = [];
-    //     if (!empty($inputs['includes'])) {
-    //         $includes = explode(",", $inputs['includes']);
-    //     }
-    //     $expenses = $this->expenseObject->with($includes)
-    //         ->where('group_id', $inputs['group_id'])->orderBy('created_at', 'desc')->get();
-    //     return $expenses;
-    // }
-
-
+  
     public function collection($inputs)
     {
         $includes = [];
@@ -41,30 +29,42 @@ class ExpenseService
             $includes[] = 'userExpenses';
         }
     
-        $expenses = $this->expenseObject->with($includes)
+        $user = auth()->user();
+        $query = $this->expenseObject->with($includes)
             ->where('group_id', $inputs['group_id'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
     
-        // Loop through each expense to calculate lent and borrowed amounts
+        // Filter out private expenses that the user is not part of
+        $query->where(function ($q) use ($user) {
+            $q->where('is_private', false)
+                ->orWhere(function ($q) use ($user) {
+                    $q->where('is_private', true)
+                        ->where(function ($q) use ($user) {
+                            $q->where('payer_user_id', $user->id)
+                                ->orWhereHas('userExpenses', function ($q) use ($user) {
+                                    $q->where('user_id', $user->id);
+                                });
+                        });
+                });
+        });
+    
+        $expenses = $query->get();
+    
+        // Calculate lent and borrowed amounts
         foreach ($expenses as $expense) {
             $expenseLentAmount = 0;
             $expenseBorrowedAmount = 0;
     
             if (!empty($expense->userExpenses) && is_iterable($expense->userExpenses)) {
-                // Iterate through user expenses for this expense
                 foreach ($expense->userExpenses as $userExpense) {
                     if ($expense->payer_user_id == $userExpense->user_id) {
-                        // Subtract the owned_amount from the total amount paid by the payer
-                         $expenseBorrowedAmount += $userExpense->owned_amount;
+                        $expenseBorrowedAmount += $userExpense->owned_amount;
                     } else {
-                        // Add to borrowed amount for non-payers
                         $expenseLentAmount += $userExpense->owned_amount;
                     }
                 }
             }
     
-            // Set the calculated amounts to the expense
             $expense->you_borrowed = $expenseBorrowedAmount;
             $expense->you_lent = $expenseLentAmount;
         }
@@ -72,11 +72,10 @@ class ExpenseService
         return $expenses;
     }
     
-
-    
     public function store($inputs)
     {
         DB::beginTransaction();
+        $isPrivate = isset($inputs['is_private']) ? $inputs['is_private'] : false;
         $expense = $this->expenseObject->create([
             'group_id' => $inputs['group_id'],
             'payer_user_id' => $inputs['payer_user_id'],
@@ -84,6 +83,7 @@ class ExpenseService
             'type' => $inputs['type'],
             'description' => $inputs['description'],
             'date' => $inputs['date'],
+            'is_private' =>$isPrivate,
         ]);
         $totalSharedAmount = array_sum((array_column($inputs['user_expenses'], 'owned_amount')));
         if ($inputs['type'] === "UNEQUALLY" &&  $expense->amount !== $totalSharedAmount) {
@@ -150,115 +150,95 @@ class ExpenseService
     }
 
     protected function addUserExpenses($inputs, $expense)
-    {
-        try {
-            if (isset($inputs['user_expenses'])) {
-                // Check if user_expenses is not empty
-                if (count($inputs['user_expenses']) === 0) {
-                    return $error['errors'] = [
-                        'message' => "Please add at least one member.",
-                        'code' => 400
-                    ];
-                }
-                // Delete existing user expenses
-                $expense->userExpenses()->delete();
+{
+    try {
+        if (isset($inputs['user_expenses'])) {
+            if (count($inputs['user_expenses']) === 0) {
+                return $error['errors'] = [
+                    'message' => "Please add at least one member.",
+                    'code' => 400
+                ];
+            }
 
-                if ($inputs['type'] === "EQUALLY") {
-                    // Ensure there is at least one user expense to avoid division by zero
-                    if (count($inputs['user_expenses']) > 0) {
-                        $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
-                        foreach ($inputs['user_expenses'] as $userExpense) {
-                            $expense->userExpenses()->create([
-                                'user_id' => $userExpense['user_id'],
-                                'expense_id' => $expense->id,
-                                'owned_amount' => $ownedUserAmount
-                            ]);
-                        }
-                    }
-                }
+            $expense->userExpenses()->delete();
 
-                if ($inputs['type'] === "UNEQUALLY") {
-                    // Calculate the total shared amount
-                    $totalSharedAmount = array_sum(array_column($inputs['user_expenses'], 'owned_amount'));
-                    if ($expense->amount !== $totalSharedAmount) {
-                        return $error['errors'] = [
-                            'message' => "Kindly check shared amount.",
-                            'code' => 400
-                        ];
-                    }
+            if ($inputs['type'] === "EQUALLY") {
+                if (count($inputs['user_expenses']) > 0) {
+                    $ownedUserAmount = $expense->amount / count($inputs['user_expenses']);
                     foreach ($inputs['user_expenses'] as $userExpense) {
                         $expense->userExpenses()->create([
                             'user_id' => $userExpense['user_id'],
                             'expense_id' => $expense->id,
-                            'owned_amount' => $userExpense['owned_amount']
+                            'owned_amount' => $ownedUserAmount
                         ]);
                     }
                 }
-            } else {
-                return $data['errors'] = [
-                    'message' => "User expenses data is missing.",
-                    'code' => 400
-                ];
             }
-        } catch (DivisionByZeroError $e) {
-            return $error['errors'] = [
-                'message' => "Division by zero error: Please ensure there are user expenses provided.",
+
+            if ($inputs['type'] === "UNEQUALLY") {
+                $totalSharedAmount = array_sum(array_column($inputs['user_expenses'], 'owned_amount'));
+                if ($expense->amount !== $totalSharedAmount) {
+                    return $error['errors'] = [
+                        'message' => "Kindly check shared amount.",
+                        'code' => 400
+                    ];
+                }
+                foreach ($inputs['user_expenses'] as $userExpense) {
+                    $expense->userExpenses()->create([
+                        'user_id' => $userExpense['user_id'],
+                        'expense_id' => $expense->id,
+                        'owned_amount' => $userExpense['owned_amount']
+                    ]);
+                }
+            }
+        } else {
+            return $data['errors'] = [
+                'message' => "User expenses data is missing.",
                 'code' => 400
             ];
-        } catch (\Exception $e) {
-            return $errors['errors'] = [
-                'message' => "An unexpected error occurred: " . $e->getMessage(),
-                'code' => 500
-            ];
         }
+    } catch (DivisionByZeroError $e) {
+        return $error['errors'] = [
+            'message' => "Division by zero error: Please ensure there are user expenses provided.",
+            'code' => 400
+        ];
+    } catch (\Exception $e) {
+        return $errors['errors'] = [
+            'message' => "An unexpected error occurred: " . $e->getMessage(),
+            'code' => 500
+        ];
     }
+}
 
     public function resourceGroupStatistics($groupId)
     {
         $groupDetails = Group::with(['members', 'expenses.userExpenses', 'settlements'])->find($groupId);
         $groupStatistics = [];
-
+    
+        if (!$groupDetails) {
+            return ['message' => 'Group not found'];
+        }
+    
         foreach ($groupDetails->members as $member) {
-            // Calculate total amount lent by the member (excluding settlements)
             $lentByMember = $groupDetails->expenses()
                 ->where('payer_user_id', $member->id)
                 ->where('type', '!=', 'SETTLEMENT')
                 ->sum('amount');
-
-            // Calculate total amount borrowed by the member
             $borrowedByMember = ExpenseParticipation::where('user_id', $member->id)
                 ->whereIn('expense_id', $groupDetails->expenses->pluck('id'))
                 ->sum('owned_amount');
-                if($borrowedByMember === 0 & $lentByMember === 0){
-                   
-                        $message['message'] = "No transaction Yet";
-                        return $message;
-                   
-                }
-
-            // Calculate total settlement amount received by the member
             $settlementAmountReceivedByMember = $groupDetails->settlements()
                 ->where('payee_id', $member->id)
                 ->sum('amount');
-
-            // Calculate total settlement amount paid by the member
             $settlementAmountPaidByMember = $groupDetails->settlements()
                 ->where('payer_user_id', $member->id)
                 ->sum('amount');
-
-            // Calculate net amount (lent - borrowed - received settlements + paid settlements)
             $netAmount = $lentByMember - $borrowedByMember + $settlementAmountPaidByMember - $settlementAmountReceivedByMember;
-
-            // Check if the user wants to settle their credit amount
-            if ($netAmount < 0 && abs($netAmount) <= $settlementAmountPaidByMember) {
-                // Adjust net amount to zero if the user has settled their credit amount
-                $netAmount = 0;
-            }
-
-            // Determine the type of balance
             $type = ($netAmount > 0) ? "DEBT" : (($netAmount < 0) ? "CREDIT" : "BALANCED");
-
-            // Add member's financial details to the group statistics
+            if ($lentByMember == 0 && $borrowedByMember == 0 && $settlementAmountReceivedByMember == 0 && $settlementAmountPaidByMember == 0) {
+                return ['message' => "No transaction Yet"];
+            }
+    
             $groupStatistics[] = [
                 'user' => $member,
                 'expense' => [
@@ -267,7 +247,8 @@ class ExpenseService
                 ],
             ];
         }
-
+    
         return $groupStatistics;
     }
+
 }

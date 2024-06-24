@@ -20,9 +20,7 @@ class GroupService
         $this->groupObject = new Group;
         $this->userParticipatedInExpense = new ExpenseParticipation;
     }
-  
-
-public function collection($inputs)
+    public function collection($inputs)
 {
     $includes = [];
     if (!empty($inputs['includes'])) {
@@ -54,42 +52,51 @@ public function collection($inputs)
         $totalBorrowedByUser = $this->userParticipatedInExpense->where('user_id', auth()->id())
             ->whereIn('expense_id', $group->expenses->pluck('id'))
             ->sum('owned_amount');
-        $totalSettledAmount = $group->expenses()
+        $totalSettledByUser = $group->settlements()
             ->where('payer_user_id', auth()->id())
-            ->where('type', 'SETTLEMENT')
             ->sum('amount');
+        $totalReceivedByUser = $group->settlements()
+            ->where('payee_id', auth()->id())
+            ->sum('amount');
+           
+
+        // Calculate net amount considering settlements
         $netAmount = $totalPaidByUser - $totalBorrowedByUser;
-        $netAmountAfterSettle = abs($netAmount) - $totalSettledAmount;
+
+        // Correctly adjust net amount after considering settlements paid and received
+        $netAmountAfterSettle = $netAmount - $totalSettledByUser - $totalReceivedByUser;
 
         if ($netAmount == 0 && $totalBorrowedByUser == 0) {
             $type = "No Expenses";
             $amount = 0;
         } else {
             $type = ($netAmountAfterSettle > 0) ? "lent" : (($netAmountAfterSettle < 0) ? "borrowed" : "Balanced");
-            $amount = abs($netAmount);
+            $amount = abs($netAmountAfterSettle);
         }
 
         $group->groupStatistics = [
             'amount' => $amount,
             'type' => $type,
         ];
+
         $groupImage = $group->image;
         $imagePath = $groupImage ? asset('storage/assets/' . $groupImage->url) : null;
         $group->image_url = $imagePath;
         unset($group->image);
+
+        // Accumulate overall net amount after settlements
         $overallNetAmount += $netAmountAfterSettle;
     }
 
     $overallType = ($overallNetAmount > 0) ? "lent" : (($overallNetAmount < 0) ? "borrowed" : "Balanced");
+    $overallAmount = abs($overallNetAmount);
 
     return [
         'groups' => $groupDetails,
-        'overall' => abs($overallNetAmount),
+        'overall' => $overallAmount,
         'overall_type' => $overallType
     ];
 }
-
-
 
     public function store($inputs)
     {
@@ -124,7 +131,6 @@ public function collection($inputs)
 
         return $group;
     }
-
 
     public function update($id, $inputs)
     {

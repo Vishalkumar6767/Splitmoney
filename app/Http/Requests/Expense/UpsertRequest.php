@@ -29,6 +29,7 @@ class UpsertRequest extends FormRequest
             'type' => 'required|string|in:EQUALLY,UNEQUALLY',
             'description' => 'nullable',
             'date' => 'date|date_format:Y-m-d',
+            'is_private'=>'boolean',
             'user_expenses' => 'nullable|array',
             'user_expenses.*.user_id' => 'required',
             'user_expenses.*.owned_amount' => 'required_if:type,UNEQUALLY|numeric',

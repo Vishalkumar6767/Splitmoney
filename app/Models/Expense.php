@@ -15,6 +15,8 @@ class Expense extends Model
         'type',
         'description',
         'date',
+        'is_private',
+        
     ];
     public function user()
     {
